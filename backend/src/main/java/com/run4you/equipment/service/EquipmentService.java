@@ -13,7 +13,10 @@ import com.run4you.report.entity.RepairReport;
 import com.run4you.report.repository.RepairReportRepository;
 import com.run4you.store.entity.Store;
 import com.run4you.store.repository.StoreRepository;
+import com.run4you.user.entity.User;
+import com.run4you.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +36,28 @@ public class EquipmentService {
     private final RepairReportRepository repairReportRepository;
     private final StoreRepository storeRepository;
     private final AssignmentRepository assignmentRepository;
+    private final UserRepository userRepository;
+
+    // 현재 로그인한 유저 조회
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    }
+
+    // 현재 로그인한 점주의 매장 조회
+    private Store getCurrentStore() {
+        User user = getCurrentUser();
+        return storeRepository.findByOwnerId(user.getId())
+                .orElseThrow(() -> new RuntimeException("매장을 찾을 수 없습니다."));
+    }
 
     // 1. 기자재 목록 조회 + 카운트
     @Transactional(readOnly = true)
-    public EquipmentListResponseDto getEquipmentList(Long storeId, EquipmentSearchDto searchDto){
+    public EquipmentListResponseDto getEquipmentList(EquipmentSearchDto searchDto){
 
+        Long storeId = getCurrentStore().getId();
         List<Equipment> equipments;
 
         // 카테고리 필터 + 키워드 검색
@@ -94,10 +114,9 @@ public class EquipmentService {
     }
 
     // 2. 기자재 등록
-    public EquipmentResponseDto registerEquipment(Long storeId, EquipmentCreateDto createDto){
+    public EquipmentResponseDto registerEquipment(EquipmentCreateDto createDto){
 
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new RuntimeException("매장을 찾을 수 없습니다."));
+        Store store = getCurrentStore();
 
         Equipment equipment = Equipment.builder()
                 .store(store)

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.run4you.common.response.ApiResponse;
 
 @RestController
 @RequestMapping("/api/equipment")
@@ -21,26 +22,25 @@ public class EquipmentController {
 
     // 1. 기자재 목록 조회
     @GetMapping
-    public ResponseEntity<EquipmentListResponseDto> getEquipmentList(
-            @RequestParam Long storeId,
+    public ResponseEntity<ApiResponse<EquipmentListResponseDto>> getEquipmentList(
             @ModelAttribute EquipmentSearchDto searchDto) {
-        return ResponseEntity.ok(equipmentService.getEquipmentList(storeId, searchDto));
+        return ResponseEntity.ok(ApiResponse.success(equipmentService.getEquipmentList(searchDto)));
     }
 
     // 2. 기자재 등록
     @PostMapping
-    public ResponseEntity<EquipmentResponseDto> registerEquipment(
-            @RequestParam Long storeId,
+    public ResponseEntity<ApiResponse<EquipmentResponseDto>> registerEquipment(
             @RequestBody @Valid EquipmentCreateDto createDto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(equipmentService.registerEquipment(storeId, createDto));
+                .body(ApiResponse.of(201, "success",
+                        equipmentService.registerEquipment(createDto)));
     }
 
     // 3. 이력보기 모달
     @GetMapping("/{equipmentId}/history")
-    public ResponseEntity<AsRequestHistoryDto> getRepairHistory(
+    public ResponseEntity<ApiResponse<AsRequestHistoryDto>> getRepairHistory(
             @PathVariable Long equipmentId){
-        return ResponseEntity.ok(equipmentService.getRepairHistory(equipmentId));
+        return ResponseEntity.ok(
+                ApiResponse.success(equipmentService.getRepairHistory(equipmentId)));
     }
-
 }
