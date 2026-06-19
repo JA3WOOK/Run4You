@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
@@ -21,4 +22,12 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
         """)
     Optional<LocalDateTime> findLastRepairAtByEquipmentId(
             @Param("equipmentId") Long equipmentId);
+
+    // as_request_id 목록으로 완료 시각 한번에 조회
+    @Query("""
+        SELECT a FROM Assignment a
+        WHERE a.asRequestId IN :asRequestIds
+        AND a.completedAt IS NOT NULL
+        """)
+    List<Assignment> findCompletedByAsRequestIds(@Param("asRequestIds") List<Long> asRequestIds);
 }

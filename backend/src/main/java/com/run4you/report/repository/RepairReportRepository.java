@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 public interface RepairReportRepository extends JpaRepository<RepairReport, Long> {
@@ -21,4 +22,8 @@ public interface RepairReportRepository extends JpaRepository<RepairReport, Long
             WHERE a.equipment.id = :equipmentId
             """)
     BigDecimal sumTotalCostByEquipmentId(@Param("equipmentId") Long equipmentId);
+
+    // N+1 방지 - 수리 이력 ID 목록으로 한번에 조회
+    @Query("SELECT r FROM RepairReport r WHERE r.asRequestId IN :asRequestIds")
+    List<RepairReport> findByAsRequestIds(@Param("asRequestIds") List<Long> asRequestIds);
 }

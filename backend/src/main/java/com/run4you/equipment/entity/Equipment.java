@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "equipment")
 public class Equipment { // 점포별 도입 기자재 자산 테이블

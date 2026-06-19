@@ -25,4 +25,16 @@ public interface AsRequestRepository extends JpaRepository<AsRequest, Long> {
             AND a.status = 'COMPLETED'
             """)
     int countCompletedByEquipmentId(@Param("equipmentId") Long equipmentId);
+
+    // 기자재 목록 카드 - 매장별 기자재의 최근 에러코드 한번에 조회
+    @Query("""
+        SELECT a FROM AsRequest a
+        WHERE a.id IN (
+            SELECT MAX(a2.id) FROM AsRequest a2
+            WHERE a2.store.id = :storeId
+            AND a2.errorCode IS NOT NULL
+            GROUP BY a2.equipment.id
+        )
+        """)
+    List<AsRequest> findLatestErrorCodesByStoreId(@Param("storeId") Long storeId);
 }
