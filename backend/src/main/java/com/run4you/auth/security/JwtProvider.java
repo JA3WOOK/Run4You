@@ -46,6 +46,10 @@ public class JwtProvider {
                 .compact();
     }
 
+    public long getRefreshTokenExpiry() {
+        return refreshTokenExpiry;
+    }
+
     public boolean validateToken(String token) {
         try {
             parseClaims(token);
