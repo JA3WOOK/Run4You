@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * 엔지니어 전문 분야 — engineer_profiles와 1:N (N:M 해소 테이블)
- * 배정 스코어링 전문분야 점수(가중치 25%) 산출에 사용된다.
+  엔지니어 전문 분야 — engineer_profiles와 1:N (N:M 해소 테이블)
+  배정 스코어링 전문분야 점수(가중치 25%) 산출에 사용된다.
  */
 @Entity
 @Table(name = "engineer_specialties",
@@ -25,8 +25,8 @@ public class EngineerSpecialty {
     private EngineerProfile engineerProfile;
 
     /**
-     * 전문 기자재 카테고리
-     * KIOSK / ESPRESSO / ICE_MAKER / REFRIGERATOR
+      전문 기자재 카테고리
+      KIOSK / ESPRESSO / ICE_MAKER / REFRIGERATOR
      */
     @Column(nullable = false, length = 20)
     private String category;

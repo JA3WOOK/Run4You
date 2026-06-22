@@ -14,10 +14,8 @@ import static org.assertj.core.api.Assertions.*;
 
 /**
  * ScoringEngine 단위 테스트
- *
- * 기획서 §18.4 계산 예시 기준 검증:
- *  엔지니어 A: 거리 2km, 키오스크 보유, 평점 4.6, active 1/5, AVAILABLE
- *  → 종합점수 89.4
+    엔지니어 A: 거리 2km, 키오스크 보유, 평점 4.6, active 1/5, AVAILABLE
+   → 종합점수 89.4
  */
 class ScoringEngineTest {
 

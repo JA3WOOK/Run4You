@@ -14,14 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
-  매칭·배정 API
-
-  GET  /api/assignments/queue                     — 출동 대기열 조회 (ENGINEER)
-  GET  /api/assignments/requests/{id}/detail      — 특정 요청 상세 + 내 점수 (ENGINEER)
-  POST /api/assignments/requests/{id}/accept      — 요청 수락 (ENGINEER, 분산 락)
-  GET  /api/assignments/{id}/candidates           — 후보 스코어 조회 (BRAND_ADMIN)
- */
 @RestController
 @RequestMapping("/api/assignments")
 @RequiredArgsConstructor
@@ -30,9 +22,8 @@ public class MatchingController {
     private final MatchingService matchingService;
 
     /**
-      [ENGINEER] 출동 요청 대기열 조회
+      출동 요청 대기열 조회
       반경 내 AS 요청을 이 엔지니어의 개인 스코어 순으로 반환.
-
       GET /api/assignments/queue
      */
     @GetMapping("/queue")
@@ -45,9 +36,8 @@ public class MatchingController {
     }
 
     /**
-      [ENGINEER] 특정 AS 요청 상세 조회 (수락 전 상세 화면)
+      특정 AS 요청 상세 조회 (수락 전 상세 화면)
       고장 기자재 정보 + 이 엔지니어의 가중치 배정 점수 반환
-
       GET /api/assignments/requests/{asRequestId}/detail
      */
     @GetMapping("/requests/{asRequestId}/detail")
@@ -61,9 +51,8 @@ public class MatchingController {
     }
 
     /**
-      [ENGINEER] 출동 요청 수락 — Redisson 분산 락 적용
+      출동 요청 수락 — Redisson 분산 락 적용
       동시에 여러 엔지니어가 수락을 시도해도 단 1명만 배정 확정.
-
       POST /api/assignments/requests/{asRequestId}/accept
      */
     @PostMapping("/requests/{asRequestId}/accept")
@@ -77,8 +66,7 @@ public class MatchingController {
     }
 
     /**
-      [BRAND_ADMIN] 후보 스코어 로그 조회 — 배정 근거 확인용
-
+      후보 스코어 로그 조회 — 배정 근거 확인용
       GET /api/assignments/{asRequestId}/candidates
      */
     @GetMapping("/{asRequestId}/candidates")
