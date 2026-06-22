@@ -30,4 +30,12 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
         AND a.completedAt IS NOT NULL
         """)
     List<Assignment> findCompletedByAsRequestIds(@Param("asRequestIds") List<Long> asRequestIds);
+
+    // 상세 - as_request_id로 배정 한 건 (엔지니어 포함)
+    @Query("""
+    SELECT a FROM Assignment a
+    LEFT JOIN FETCH a.engineer
+    WHERE a.asRequestId = :asRequestId
+    """)
+    Optional<Assignment> findByAsRequestIdWithEngineer(@Param("asRequestId") Long asRequestId);
 }

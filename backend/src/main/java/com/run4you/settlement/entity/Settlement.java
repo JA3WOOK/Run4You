@@ -20,11 +20,14 @@ public class Settlement { // 테스트용 임시 구현
     private String invoiceNumber;
 
     @Column(name = "billed_amount", precision = 12, scale = 2)
-    private BigDecimal billedAmount;       // 최종 합계
+    private BigDecimal billedAmount;
 
     @Column(name = "commission_amount", precision = 12, scale = 2)
-    private BigDecimal commissionAmount;   // 긴급 수수료
+    private BigDecimal commissionAmount;
 
     @Column(name = "vat_amount", precision = 12, scale = 2)
-    private BigDecimal vatAmount;          // 부가세
+    private BigDecimal vatAmount;
+
+    @Column(name = "pdf_url")
+    private String pdfUrl;
 }

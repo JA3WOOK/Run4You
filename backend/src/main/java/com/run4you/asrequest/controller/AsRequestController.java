@@ -1,9 +1,6 @@
 package com.run4you.asrequest.controller;
 
-import com.run4you.asrequest.dto.AsRequestCreateDto;
-import com.run4you.asrequest.dto.AsRequestResponseDto;
-import com.run4you.asrequest.dto.ReceiptListResponseDto;
-import com.run4you.asrequest.dto.ReceiptSearchDto;
+import com.run4you.asrequest.dto.*;
 import com.run4you.asrequest.service.AsRequestService;
 import com.run4you.equipment.entity.EquipmentCategory;
 import jakarta.validation.Valid;
@@ -51,5 +48,13 @@ public class AsRequestController {
                 .build();
 
         return ResponseEntity.ok(ApiResponse.success(asRequestService.getReceipts(searchDto)));
+    }
+
+    @GetMapping("/receipts/{asRequestId}")
+    public ResponseEntity<ApiResponse<ReceiptDetailResponseDto>> getReceiptDetail(
+            @PathVariable Long asRequestId) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(asRequestService.getReceiptDetail(asRequestId)));
     }
 }

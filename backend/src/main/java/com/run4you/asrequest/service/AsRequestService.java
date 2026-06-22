@@ -1,16 +1,23 @@
 package com.run4you.asrequest.service;
 
-import com.run4you.asrequest.dto.AsRequestCreateDto;
-import com.run4you.asrequest.dto.AsRequestResponseDto;
-import com.run4you.asrequest.dto.ReceiptListResponseDto;
-import com.run4you.asrequest.dto.ReceiptSearchDto;
+import com.run4you.asrequest.dto.*;
 import com.run4you.asrequest.entity.AsRequest;
 import com.run4you.asrequest.entity.AsStatus;
 import com.run4you.asrequest.repository.AsRequestRepository;
 import com.run4you.dispatch.entity.DispatchStatus;
+import com.run4you.dispatch.repository.DispatchStatusHistoryRepository;
 import com.run4you.equipment.entity.Equipment;
 import com.run4you.equipment.entity.EquipmentStatus;
 import com.run4you.equipment.repository.EquipmentRepository;
+import com.run4you.matching.entity.Assignment;
+import com.run4you.matching.entity.EngineerProfile;
+import com.run4you.matching.repository.AssignmentRepository;
+import com.run4you.matching.repository.EngineerProfileRepository;
+import com.run4you.report.entity.RepairReport;
+import com.run4you.report.repository.RepairReportPartsRepository;
+import com.run4you.report.repository.RepairReportRepository;
+import com.run4you.settlement.entity.Settlement;
+import com.run4you.settlement.repository.SettlementRepository;
 import com.run4you.store.entity.Store;
 import com.run4you.store.repository.StoreRepository;
 import com.run4you.user.entity.User;
@@ -20,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -33,6 +41,13 @@ public class AsRequestService {
     private final EquipmentRepository equipmentRepository;
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
+
+    private final RepairReportRepository repairReportRepository;
+    private final AssignmentRepository assignmentRepository;
+    private final SettlementRepository settlementRepository;
+    private final EngineerProfileRepository engineerProfileRepository;
+    private final RepairReportPartsRepository repairReportPartsRepository;
+    private final DispatchStatusHistoryRepository dispatchStatusHistoryRepository;
 
     // 현재 로그인한 유저 조회
     private User getCurrentUser() {
@@ -129,4 +144,104 @@ public class AsRequestService {
                 .build();
     }
 
+    // 진단서 및 영수증 상세 조회
+    @Transactional(readOnly = true)
+    public ReceiptDetailResponseDto getReceiptDetail(Long asRequestId) {
+
+        User requester = getCurrentUser();
+
+        // 1. 접수 + 기자재
+        AsRequest asRequest = asRequestRepository.findById(asRequestId)
+                .orElseThrow(() -> new IllegalArgumentException("접수를 찾을 수 없습니다."));
+
+        // 본인 접수인지 확인
+        if (!asRequest.getRequester().getId().equals(requester.getId())) {
+            throw new IllegalStateException("이 영수증에 접근할 수 없습니다.");
+        }
+
+        // 2. 배정 (엔지니어 포함)
+        Assignment assignment = assignmentRepository
+                .findByAsRequestIdWithEngineer(asRequestId)
+                .orElse(null);
+
+        // 3. 리포트 (진단, 금액)
+        RepairReport report = repairReportRepository
+                .findByAsRequestId(asRequestId)
+                .orElse(null);
+
+        // 4. 엔지니어 평점
+        BigDecimal engineerRating = null;
+        String engineerName = null;
+        if (assignment != null && assignment.getEngineer() != null) {
+            engineerName = assignment.getEngineer().getName();
+            engineerRating = engineerProfileRepository
+                    .findByUserId(assignment.getEngineer().getId())
+                    .map(EngineerProfile::getRating)
+                    .orElse(null);
+        }
+
+        // 5. 수리 시작 시각 (REPAIRING)
+        LocalDateTime startTime = null;
+        if (assignment != null) {
+            startTime = dispatchStatusHistoryRepository
+                    .findStartTime(assignment.getId(), DispatchStatus.REPAIRING)
+                    .orElse(null);
+        }
+
+        // 6. 정산 + 부품 (리포트가 있을 때만)
+        String invoiceNumber = null;
+        String pdfUrl = null;
+        BigDecimal commissionAmount = null;
+        BigDecimal vatAmount = null;
+        BigDecimal billedAmount = null;
+        List<ReceiptDetailResponseDto.PartItemDto> parts = List.of();
+
+        if (report != null) {
+            // 정산
+            Settlement settlement = settlementRepository
+                    .findByReportId(report.getId())
+                    .orElse(null);
+            if (settlement != null) {
+                invoiceNumber = settlement.getInvoiceNumber();
+                pdfUrl = settlement.getPdfUrl();
+                commissionAmount = settlement.getCommissionAmount();
+                vatAmount = settlement.getVatAmount();
+                billedAmount = settlement.getBilledAmount();
+            }
+
+            // 부품 목록 + amount(단가×수량) 계산
+            parts = repairReportPartsRepository.findPartsByReportId(report.getId())
+                    .stream()
+                    .map(p -> ReceiptDetailResponseDto.PartItemDto.builder()
+                            .partCode(p.getPartCode())
+                            .partName(p.getPartName())
+                            .quantity(p.getQuantity())
+                            .unitPrice(p.getUnitPrice())
+                            .amount(p.getUnitPrice()
+                                    .multiply(BigDecimal.valueOf(p.getQuantity())))
+                            .build())
+                    .toList();
+        }
+
+        // 7. 조립
+        return ReceiptDetailResponseDto.builder()
+                .asRequestId(asRequest.getId())
+                .invoiceNumber(invoiceNumber)
+                .pdfUrl(pdfUrl)
+                .status(asRequest.getStatus())
+                .equipmentName(asRequest.getEquipment().getName())
+                .modelName(asRequest.getEquipment().getModelName())
+                .engineerName(engineerName)
+                .engineerRating(engineerRating)
+                .startTime(startTime)
+                .endTime(assignment != null ? assignment.getCompletedAt() : null)
+                .diagnosis(report != null ? report.getDiagnosis() : null)
+                .parts(parts)
+                .laborCost(report != null ? report.getLaborCost() : null)
+                .partsCost(report != null ? report.getPartsCost() : null)
+                .commissionAmount(commissionAmount)
+                .vatAmount(vatAmount)
+                .billedAmount(billedAmount)
+                .build();
+    }
 }
