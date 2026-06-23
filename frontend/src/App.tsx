@@ -1,122 +1,66 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import { Sidebar } from "./components/layout/Sidebar";
+import type { UserRole, Screen } from "./components/layout/Sidebar";
+import { Header } from "./components/layout/Header";
+import { ToastNotification } from "./components/common/ToastNotification";
 
-function App() {
-  const [count, setCount] = useState(0)
+/* 테스트용 임시 구현 */
+
+const screenLabels: Record<string, string> = {
+  "store-home": "기자재 현황",
+  "store-as-form": "긴급 A/S 접수",
+  "store-dispatch": "출동 현황",
+  "store-receipt": "진단서 / 영수증",
+  "eng-queue": "출동 요청 대기열",
+  "eng-detail": "출동 상세",
+  "eng-status": "수리 상태 변경",
+  "eng-report": "정비 리포트",
+  "admin-dashboard": "통합 관제 대시보드",
+  "admin-equipment": "기자재 관리",
+  "admin-billing": "정산 관리",
+  "super-dashboard": "전체 통계 대시보드",
+};
+
+// 역할별 기본 화면 (전환 시 그 역할의 첫 메뉴로 이동)
+const defaultScreen: Record<UserRole, Screen> = {
+  STORE_OWNER: "store-home",
+  ENGINEER: "eng-queue",
+  BRAND_ADMIN: "admin-dashboard",
+  SUPER_ADMIN: "super-dashboard",
+};
+
+export default function App() {
+  const [role, setRole] = useState<UserRole>("STORE_OWNER");
+  const [screen, setScreen] = useState<Screen>("store-home");
+
+  // 역할 바뀌면 그 역할의 첫 화면으로 이동
+  const handleRoleChange = (r: UserRole) => {
+    setRole(r);
+    setScreen(defaultScreen[r]);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      <div
+          className="flex h-screen overflow-hidden"
+          style={{ background: "var(--background)", fontFamily: "var(--font-sans)" }}
+      >
+        <Sidebar
+            role={role}
+            screen={screen}
+            onScreenChange={setScreen}
+            onRoleChange={handleRoleChange}
+            notifications={3}
+        />
 
-      <div className="ticks"></div>
+        <main className="flex-1 overflow-y-auto">
+          <Header screenLabel={screenLabels[screen] ?? screen} currentTime="2026-06-15 14:32" />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <div className="px-8 py-6">
+            {/* 여기에 store 화면들이 들어갈 자리 */}
+          </div>
+        </main>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        <ToastNotification />
+      </div>
+  );
 }
-
-export default App
