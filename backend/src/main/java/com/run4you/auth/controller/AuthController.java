@@ -1,5 +1,6 @@
 package com.run4you.auth.controller;
 
+import com.run4you.auth.dto.BrandSignupRequest;
 import com.run4you.auth.dto.LoginRequest;
 import com.run4you.auth.dto.SignupRequest;
 import com.run4you.auth.dto.TokenResponse;
@@ -21,6 +22,12 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestBody SignupRequest request) {
         authService.signup(request);
         return ResponseEntity.ok(ApiResponse.of(200, "회원가입이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.", null));
+    }
+
+    @PostMapping("/signup/brand")
+    public ResponseEntity<ApiResponse<Void>> signupBrand(@Valid @RequestBody BrandSignupRequest request) {
+        authService.signupBrand(request);
+        return ResponseEntity.ok(ApiResponse.of(200, "브랜드 가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.", null));
     }
 
     @PostMapping("/login")
