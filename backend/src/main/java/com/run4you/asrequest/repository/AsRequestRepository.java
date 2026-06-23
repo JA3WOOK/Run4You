@@ -68,7 +68,7 @@ public interface AsRequestRepository extends JpaRepository<AsRequest, Long> {
             rr.totalCost
         )
         FROM AsRequest a
-        LEFT JOIN Assignment asn ON asn.asRequestId = a.id
+        LEFT JOIN Assignment asn ON asn.asRequest.id = a.id
         LEFT JOIN RepairReport rr ON rr.assignmentId = asn.id
         WHERE a.requester.id = :requesterId
           AND a.status = :status
