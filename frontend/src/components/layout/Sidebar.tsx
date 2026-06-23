@@ -1,7 +1,7 @@
 import {
     LayoutDashboard, Wrench, MapPin, FileText, ClipboardList,
     Settings, Bell, ChevronRight, LogOut, Zap, BarChart3,
-    Users, CreditCard, Package
+    CreditCard, Package
 } from "lucide-react";
 
 export type UserRole = "STORE_OWNER" | "ENGINEER" | "BRAND_ADMIN" | "SUPER_ADMIN";

@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import { Sidebar } from "./components/layout/Sidebar";
 import type { UserRole, Screen } from "./components/layout/Sidebar";
 import { Header } from "./components/layout/Header";
 import { ToastNotification } from "./components/common/ToastNotification";
-
-/* 테스트용 임시 구현 */
 
 const screenLabels: Record<string, string> = {
   "store-home": "기자재 현황",
@@ -21,7 +23,6 @@ const screenLabels: Record<string, string> = {
   "super-dashboard": "전체 통계 대시보드",
 };
 
-// 역할별 기본 화면 (전환 시 그 역할의 첫 메뉴로 이동)
 const defaultScreen: Record<UserRole, Screen> = {
   STORE_OWNER: "store-home",
   ENGINEER: "eng-queue",
@@ -29,38 +30,46 @@ const defaultScreen: Record<UserRole, Screen> = {
   SUPER_ADMIN: "super-dashboard",
 };
 
-export default function App() {
-  const [role, setRole] = useState<UserRole>("STORE_OWNER");
-  const [screen, setScreen] = useState<Screen>("store-home");
-
-  // 역할 바뀌면 그 역할의 첫 화면으로 이동
-  const handleRoleChange = (r: UserRole) => {
-    setRole(r);
-    setScreen(defaultScreen[r]);
-  };
+function Dashboard() {
+  const { user } = useAuth();
+  const role = (user?.role ?? "STORE_OWNER") as UserRole;
+  const [screen, setScreen] = useState<Screen>(defaultScreen[role]);
 
   return (
-      <div
-          className="flex h-screen overflow-hidden"
-          style={{ background: "var(--background)", fontFamily: "var(--font-sans)" }}
-      >
-        <Sidebar
-            role={role}
-            screen={screen}
-            onScreenChange={setScreen}
-            onRoleChange={handleRoleChange}
-            notifications={3}
-        />
+    <div
+      className="flex h-screen overflow-hidden"
+      style={{ background: "var(--background)", fontFamily: "var(--font-sans)" }}
+    >
+      <Sidebar
+        role={role}
+        screen={screen}
+        onScreenChange={setScreen}
+        onRoleChange={() => {}}
+        notifications={3}
+      />
+      <main className="flex-1 overflow-y-auto">
+        <Header screenLabel={screenLabels[screen] ?? screen} currentTime="2026-06-15 14:32" />
+        <div className="px-8 py-6" />
+      </main>
+      <ToastNotification />
+    </div>
+  );
+}
 
-        <main className="flex-1 overflow-y-auto">
-          <Header screenLabel={screenLabels[screen] ?? screen} currentTime="2026-06-15 14:32" />
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  return user ? <>{children}</> : <Navigate to="/login" replace />;
+}
 
-          <div className="px-8 py-6">
-            {/* 여기에 store 화면들이 들어갈 자리 */}
-          </div>
-        </main>
-
-        <ToastNotification />
-      </div>
+export default function App() {
+  return (
+    <AuthProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AuthProvider>
   );
 }
