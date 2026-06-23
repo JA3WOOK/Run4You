@@ -62,7 +62,7 @@ public class MatchingQueueItemResponse {
                 .asRequestId(req.getId())
                 .asRequestNo("AS-" + req.getRequestedAt().getYear() + "-" + String.format("%04d", req.getId()))
                 .storeName(store.getName())
-                .storeDistrict(store.getDistrict())   // Store 엔티티에 district 필드 가정
+                .storeDistrict(extractDistrict(store.getAddress()))    // address 파싱
                 .priority(req.getPriority().name())
                 .errorCode(req.getErrorCode())
                 .equipmentType(equipment.getCategory().name())
@@ -77,5 +77,28 @@ public class MatchingQueueItemResponse {
                 .availabilityScore(score.getAvailabilityScore())
                 .urgencyScore(score.getUrgencyScore())
                 .build();
+    }
+
+    /**
+     * 주소에서 "구 동" 추출
+     * "서울특별시 강남구 역삼동 123-45" → "강남구 역삼동"
+     * "서울 마포구 합정로 10"          → "마포구 합정로"
+     */
+    private static String extractDistrict(String address) {
+        if (address == null || address.isBlank()) return "";
+
+        String[] parts = address.split(" ");
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            if (part.endsWith("구") || part.endsWith("군")) {
+                // "강남구" 다음 단어("역삼동")까지 합쳐서 반환
+                if (i + 1 < parts.length) {
+                    return part + " " + parts[i + 1];
+                }
+                return part;
+            }
+        }
+        // 구/군을 못 찾으면 주소 그대로 반환
+        return address;
     }
 }

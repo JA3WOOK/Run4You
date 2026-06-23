@@ -5,6 +5,7 @@ import com.run4you.matching.service.ScoringEngine.ScoreResult;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -28,8 +29,8 @@ public class AssignmentDetailResponse {
     // ─── 기자재 정보 ─────────────────────────────────────────────
     private String equipmentName;
     private String serialNumber;
-    private String installedDate;
-    private String lastRepairedDate;
+    private String purchasedDate;       // purchasedAt (구매일)
+    private String lastRepairedDate;    // Equipment에 없어서 "-" 고정, 추후 Assignment 이력에서 조회
     private String equipmentCategory;
 
     // ─── 가중치 배정 점수 ────────────────────────────────────────
@@ -54,7 +55,7 @@ public class AssignmentDetailResponse {
 
     // ─── 팩토리 ──────────────────────────────────────────────────
 
-    public static AssignmentDetailResponse of(AsRequest req, ScoreResult score) {
+    public static AssignmentDetailResponse of(AsRequest req, ScoreResult score, LocalDateTime lastRepairedAt)  {
         var equipment  = req.getEquipment();
         var store      = req.getStore();
         var dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -69,11 +70,9 @@ public class AssignmentDetailResponse {
                 .errorCode(req.getErrorCode())
                 // 기자재
                 .equipmentName(equipment.getName())
-                .serialNumber(equipment.getSerialNumber())
-                .installedDate(equipment.getInstalledDate() != null
-                        ? equipment.getInstalledDate().format(dateFormat) : "-")
-                .lastRepairedDate(equipment.getLastRepairedDate() != null
-                        ? equipment.getLastRepairedDate().format(dateFormat) : "-")
+                .serialNumber(equipment.getSerialNo())
+                .purchasedDate(equipment.getPurchasedAt() != null ? equipment.getPurchasedAt().format(dateFormat) : "-")
+                .lastRepairedDate(lastRepairedAt != null ? lastRepairedAt.format(dateFormat) : "-")        // null이면 수리 이력 없음
                 .equipmentCategory(equipment.getCategory().name())
                 // 점수
                 .totalScore(score.getTotalScore())

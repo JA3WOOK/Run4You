@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -139,7 +140,10 @@ public class MatchingService {
         if (!score.isInRange()) {
             throw new OutOfServiceRadiusException("서비스 반경 밖의 요청입니다.");
         }
-        return AssignmentDetailResponse.of(req, score);
+        LocalDateTime lastRepairedAt = assignmentRepository
+                .findLastRepairAtByEquipmentId(req.getEquipment().getId())
+                .orElse(null);
+        return AssignmentDetailResponse.of(req, score, lastRepairedAt);
     }
 
     // ─────────────────────────────────────────────────────────────────
