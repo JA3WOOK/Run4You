@@ -6,13 +6,13 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 /**
-* 런포유 공통 API 응답 래퍼
+ * 런포유 공통 API 응답 래퍼
 
-  성공 응답:
-    { "success": true, "data": { ... }, "timestamp": "..." }
+   성공 응답:
+     { "success": true, "data": { ... }, "timestamp": "..." }
 
-  실패 응답:
-    { "success": false, "message": "...", "code": "ALREADY_ASSIGNED", "timestamp": "..." }
+   실패 응답:
+     { "success": false, "message": "...", "code": "ALREADY_ASSIGNED", "timestamp": "..." }
  */
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 필드는 JSON에서 제외
@@ -35,10 +35,10 @@ public class ApiResponse<T> {
     // ─── 생성자 (private) ─────────────────────────────────────────
 
     private ApiResponse(boolean success, T data, String message, String code) {
-        this.success   = success;
-        this.data      = data;
-        this.message   = message;
-        this.code      = code;
+        this.success = success;
+        this.data = data;
+        this.message = message;
+        this.code = code;
         this.timestamp = LocalDateTime.now();
     }
 
@@ -69,19 +69,12 @@ public class ApiResponse<T> {
     /**
      * 메시지 + 에러 코드 에러 응답
      * 클라이언트가 코드 기반으로 분기 처리할 때 사용
-     *
-     * 예시 code 값:
-     *  - ALREADY_ASSIGNED       : 이미 배정된 요청
-     *  - LOCK_FAILED            : 분산 락 획득 실패
-     *  - ENGINEER_NOT_FOUND     : 엔지니어 프로필 없음
-     *  - OUT_OF_SERVICE_RADIUS  : 서비스 반경 초과
-     *  - INVALID_STATUS         : 상태 전이 불가
      */
     public static <T> ApiResponse<T> error(String message, String code) {
         return new ApiResponse<>(false, null, message, code);
     }
 
-    /** ErrorCode enum과 함께 사용하는 팩토리 (확장 시 활용) */
+    /** ErrorCode enum과 함께 사용하는 팩토리 */
     public static <T> ApiResponse<T> error(ErrorCode errorCode) {
         return new ApiResponse<>(false, null, errorCode.getMessage(), errorCode.name());
     }
@@ -112,8 +105,12 @@ public class ApiResponse<T> {
 
         private final String message;
 
-        ErrorCode(String message) { this.message = message; }
+        ErrorCode(String message) {
+            this.message = message;
+        }
 
-        public String getMessage() { return message; }
+        public String getMessage() {
+            return message;
+        }
     }
 }

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -18,7 +19,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAlreadyAssigned(AlreadyAssignedException e) {
         log.warn("[예외] AlreadyAssigned: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error(e.getMessage(), ErrorCode.ALREADY_ASSIGNED.name()));
+                .body(ApiResponse.error(ErrorCode.ALREADY_ASSIGNED));
     }
 
     /** 분산 락 획득 실패 — 409 Conflict */
@@ -53,6 +54,14 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ErrorCode.OUT_OF_SERVICE_RADIUS));
     }
 
+    /** IllegalArgumentException — 400 Bad Request */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException e) {
+        log.warn("[예외] IllegalArgument: {}", e.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+    }
+
     /** 상태 전이 불가 — 422 Unprocessable Entity */
     @ExceptionHandler(InvalidStatusTransitionException.class)
     public ResponseEntity<ApiResponse<Void>> handleInvalidTransition(InvalidStatusTransitionException e) {
@@ -67,6 +76,25 @@ public class GlobalExceptionHandler {
         log.warn("[예외] Forbidden: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiResponse.error(ErrorCode.FORBIDDEN));
+    }
+
+    /** IllegalStateException — 403 Forbidden */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalState(IllegalStateException e) {
+        log.warn("[예외] IllegalState: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(e.getMessage()));
+    }
+
+    /** 입력값 검증 실패 — 400 Bad Request */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .findFirst()
+                .orElse("입력값이 올바르지 않습니다.");
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(message, ErrorCode.VALIDATION_FAILED.name()));
     }
 
     /** 그 외 예상치 못한 예외 — 500 Internal Server Error */
