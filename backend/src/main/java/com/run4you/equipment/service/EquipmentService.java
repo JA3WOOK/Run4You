@@ -192,7 +192,7 @@ public class EquipmentService {
                 .findCompletedByAsRequestIds(asRequestIds)
                 .stream()
                 .collect(Collectors.toMap(
-                        Assignment::getAsRequestId,
+                        assignment -> assignment.getAsRequest().getId(),
                         Assignment::getCompletedAt
                 ));
 

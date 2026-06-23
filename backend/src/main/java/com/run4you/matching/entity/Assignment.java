@@ -1,5 +1,6 @@
 package com.run4you.matching.entity;
 
+import com.run4you.asrequest.entity.AsRequest;
 import com.run4you.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -15,8 +16,9 @@ public class Assignment { // 테스트용 임시 구현
     private Long id;
 
     // 접수 ID
-    @Column(name = "as_request_id", nullable = false)
-    private Long asRequestId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "as_request_id", nullable = false)
+    private AsRequest asRequest;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "engineer_id")
