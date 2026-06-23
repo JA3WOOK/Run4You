@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import SuperAdminBrandsPage from "./pages/SuperAdminBrandsPage";
+import SuperAdminUsersPage from "./pages/SuperAdminUsersPage";
 import { Sidebar } from "./components/layout/Sidebar";
 import type { UserRole, Screen } from "./components/layout/Sidebar";
 import { Header } from "./components/layout/Header";
@@ -21,6 +23,8 @@ const screenLabels: Record<string, string> = {
   "admin-equipment": "기자재 관리",
   "admin-billing": "정산 관리",
   "super-dashboard": "전체 통계 대시보드",
+  "super-brands": "브랜드 관리",
+  "super-users": "회원 관리",
 };
 
 const defaultScreen: Record<UserRole, Screen> = {
@@ -49,7 +53,10 @@ function Dashboard() {
       />
       <main className="flex-1 overflow-y-auto">
         <Header screenLabel={screenLabels[screen] ?? screen} currentTime="2026-06-15 14:32" />
-        <div className="px-8 py-6" />
+        <div className="px-8 py-6">
+          {screen === "super-brands" && <SuperAdminBrandsPage />}
+          {screen === "super-users" && <SuperAdminUsersPage />}
+        </div>
       </main>
       <ToastNotification />
     </div>
