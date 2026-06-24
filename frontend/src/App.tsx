@@ -9,6 +9,7 @@ import { Sidebar } from "./components/layout/Sidebar";
 import type { UserRole, Screen } from "./components/layout/Sidebar";
 import { Header } from "./components/layout/Header";
 import { ToastNotification } from "./components/common/ToastNotification";
+import { StoreHome } from "./pages/store/StoreHome";
 
 const screenLabels: Record<string, string> = {
   "store-home": "기자재 현황",
@@ -56,6 +57,7 @@ function Dashboard() {
         <div className="px-8 py-6">
           {screen === "super-brands" && <SuperAdminBrandsPage />}
           {screen === "super-users" && <SuperAdminUsersPage />}
+          {screen === "store-home" && <StoreHome onRequestAS={() => setScreen("store-as-form")} />}
         </div>
       </main>
       <ToastNotification />

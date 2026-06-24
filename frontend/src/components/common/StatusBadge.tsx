@@ -23,9 +23,9 @@ export function StatusBadge({ status, size = "md" }: StatusBadgeProps) {
             style={{
                 background: c.bg,
                 color: c.color,
-                fontSize: size === "sm" ? 10 : 11,
-                fontWeight: 600,
-                padding: size === "sm" ? "2px 7px" : "3px 8px",
+                fontSize: size === "sm" ? 12 : 13,
+                fontWeight: 700,
+                padding: size === "sm" ? "4px 10px" : "5px 12px",
                 border: `1px solid ${c.color}30`,
             }}
         >
