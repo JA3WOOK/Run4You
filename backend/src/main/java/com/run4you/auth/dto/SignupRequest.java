@@ -23,4 +23,6 @@ public class SignupRequest {
 
     @NotNull
     private Role role;
+
+    private Long brandId;
 }

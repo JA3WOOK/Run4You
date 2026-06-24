@@ -36,4 +36,12 @@ public class User {
 
     @Column(name = "brand_id")
     private Long brandId;
+
+    public void approve() {
+        this.status = UserStatus.ACTIVE;
+    }
+
+    public void reject() {
+        this.status = UserStatus.INACTIVE;
+    }
 }
