@@ -17,6 +17,8 @@ interface SidebarProps {
     onScreenChange: (s: Screen) => void;
     onRoleChange: (r: UserRole) => void;
     notifications: number;
+    userName: string;
+    onLogout: () => void;
 }
 
 const roleLabels: Record<UserRole, string> = {
@@ -58,7 +60,7 @@ const navItems: Record<UserRole, { label: string; screen: Screen; icon: React.Re
     ],
 };
 
-export function Sidebar({ role, screen, onScreenChange, onRoleChange, notifications }: SidebarProps) {
+export function Sidebar({ role, screen, onScreenChange, onRoleChange, notifications, userName, onLogout }: SidebarProps) {
     const items = navItems[role];
 
     return (
@@ -156,15 +158,30 @@ export function Sidebar({ role, screen, onScreenChange, onRoleChange, notificati
                     <Settings size={18} />
                     <span style={{ fontSize: 15 }}>설정</span>
                 </button>
-                <div className="flex items-center gap-2 px-3 py-2 mt-1 rounded-lg" style={{ background: "rgba(255,255,255,0.04)" }}>
+                <div
+                    className="flex items-center gap-2 px-3 py-2 mt-1 rounded-lg"
+                    style={{ background: "rgba(255,255,255,0.04)" }}
+                >
                     <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "#334155", color: "#94A3B8", fontSize: 13, fontWeight: 700 }}>
-                        김
+                        {userName[0]?.toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <div style={{ fontSize: 14, color: "#CBD5E1", fontWeight: 500 }}>김민준</div>
-                        <div style={{ fontSize: 11, color: "#475569" }}>민트커피 강남점</div>
+                        <div style={{ fontSize: 14, color: "#CBD5E1", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {userName}
+                        </div>
+                        <div style={{ fontSize: 11, color: "#475569" }}>{roleLabels[role]}</div>
                     </div>
-                    <LogOut size={15} style={{ color: "#475569" }} />
+                    <button
+                        onClick={onLogout}
+                        className="p-1.5 rounded-md transition-all"
+                        style={{ color: "#475569" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#F87171", e.currentTarget.style.background = "rgba(248,113,113,0.1)")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "#475569", e.currentTarget.style.background = "transparent")}
+                        style={{ color: "#475569", cursor: "pointer" }}
+                        title="로그아웃"
+                    >
+                        <LogOut size={15} />
+                    </button>
                 </div>
             </div>
         </aside>

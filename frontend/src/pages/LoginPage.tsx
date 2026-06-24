@@ -18,7 +18,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const token = await login(email, password);
-      signIn(token.accessToken, token.refreshToken);
+      signIn(token.accessToken, token.refreshToken, token.name);
       navigate('/');
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { message?: string } } })

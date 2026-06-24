@@ -9,6 +9,7 @@ import com.run4you.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,6 +36,12 @@ public class AuthController {
     public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
         TokenResponse token = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success(token));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal String email) {
+        authService.logout(email);
+        return ResponseEntity.ok(ApiResponse.success(null, "로그아웃되었습니다."));
     }
 
     @PostMapping("/reissue")

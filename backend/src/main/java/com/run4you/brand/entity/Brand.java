@@ -2,6 +2,7 @@ package com.run4you.brand.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "brands")
@@ -21,8 +22,8 @@ public class Brand {
     @Column(name = "business_no", nullable = false, unique = true)
     private String businessNo;
 
-    @Column(name = "commission_rate", nullable = false)
-    private Double commissionRate;
+    @Column(name = "commission_rate", nullable = false, precision = 5, scale = 2)
+    private BigDecimal commissionRate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -36,7 +37,7 @@ public class Brand {
         this.status = BrandStatus.INACTIVE;
     }
 
-    public void updateCommissionRate(Double commissionRate) {
+    public void updateCommissionRate(BigDecimal commissionRate) {
         this.commissionRate = commissionRate;
     }
 }

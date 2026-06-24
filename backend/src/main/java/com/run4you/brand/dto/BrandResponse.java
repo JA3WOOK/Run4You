@@ -3,6 +3,7 @@ package com.run4you.brand.dto;
 import com.run4you.brand.entity.Brand;
 import com.run4you.brand.entity.BrandStatus;
 import lombok.Getter;
+import java.math.BigDecimal;
 
 @Getter
 public class BrandResponse {
@@ -10,7 +11,7 @@ public class BrandResponse {
     private final Long id;
     private final String name;
     private final String businessNo;
-    private final Double commissionRate;
+    private final BigDecimal commissionRate;
     private final BrandStatus status;
 
     public BrandResponse(Brand brand) {

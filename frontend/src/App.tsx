@@ -35,7 +35,7 @@ const defaultScreen: Record<UserRole, Screen> = {
 };
 
 function Dashboard() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const role = (user?.role ?? "STORE_OWNER") as UserRole;
   const [screen, setScreen] = useState<Screen>(defaultScreen[role]);
 
@@ -50,6 +50,8 @@ function Dashboard() {
         onScreenChange={setScreen}
         onRoleChange={() => {}}
         notifications={3}
+        userName={user?.name ?? ''}
+        onLogout={signOut}
       />
       <main className="flex-1 overflow-y-auto">
         <Header screenLabel={screenLabels[screen] ?? screen} currentTime="2026-06-15 14:32" />

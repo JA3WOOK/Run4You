@@ -102,8 +102,11 @@ public class AuthService {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        if (user.getStatus() != UserStatus.ACTIVE) {
+        if (user.getStatus() == UserStatus.PENDING) {
             throw new IllegalStateException("승인 대기 중인 계정입니다.");
+        }
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            throw new IllegalStateException("가입이 거절된 계정입니다.");
         }
 
         String accessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole().name());
@@ -115,7 +118,11 @@ public class AuthService {
                 Duration.ofMillis(jwtProvider.getRefreshTokenExpiry())
         );
 
-        return new TokenResponse(accessToken, refreshToken);
+        return new TokenResponse(accessToken, refreshToken, user.getName());
+    }
+
+    public void logout(String email) {
+        redisTemplate.delete("refresh:" + email);
     }
 
     public TokenResponse reissue(String refreshToken) {
@@ -142,6 +149,6 @@ public class AuthService {
                 Duration.ofMillis(jwtProvider.getRefreshTokenExpiry())
         );
 
-        return new TokenResponse(newAccessToken, newRefreshToken);
+        return new TokenResponse(newAccessToken, newRefreshToken, user.getName());
     }
 }

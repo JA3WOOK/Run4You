@@ -23,7 +23,7 @@ public class DataInitializer implements ApplicationRunner {
             userRepository.save(User.builder()
                     .email("admin@run4you.com")
                     .password(passwordEncoder.encode("admin1234!"))
-                    .name("슈퍼관리자")
+                    .name("관리자")
                     .role(Role.SUPER_ADMIN)
                     .status(UserStatus.ACTIVE)
                     .build());

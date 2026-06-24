@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
+import java.math.BigDecimal;
 
 @Getter
 public class BrandSignupRequest {
@@ -17,7 +18,7 @@ public class BrandSignupRequest {
 
     @NotNull(message = "수수료율을 입력해주세요.")
     @Positive(message = "수수료율은 0보다 커야 합니다.")
-    private Double commissionRate;
+    private BigDecimal commissionRate;
 
     @Email
     @NotBlank(message = "이메일을 입력해주세요.")

@@ -2,9 +2,14 @@ import axios from 'axios';
 
 const api = axios.create({ baseURL: 'http://localhost:8080/api' });
 
+function authHeader(token: string) {
+  return { Authorization: `Bearer ${token}` };
+}
+
 export interface TokenResponse {
   accessToken: string;
   refreshToken: string;
+  name: string;
 }
 
 export interface SignupRequest {
@@ -37,4 +42,8 @@ export async function signup(data: SignupRequest): Promise<void> {
 
 export async function signupBrand(data: BrandSignupRequest): Promise<void> {
   await api.post('/auth/signup/brand', data);
+}
+
+export async function logout(token: string): Promise<void> {
+  await api.post('/auth/logout', {}, { headers: authHeader(token) });
 }
