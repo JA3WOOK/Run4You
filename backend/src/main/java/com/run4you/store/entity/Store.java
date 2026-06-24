@@ -1,5 +1,6 @@
 package com.run4you.store.entity;
 
+import com.run4you.brand.entity.Brand;
 import com.run4you.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,6 +20,11 @@ public class Store {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    // 소속 브랜드
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "brand_id", nullable = false)
+    private Brand brand;
 
     // 점주 (users 테이블 참조)
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,4 +60,8 @@ public class Store {
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    public void changeOwner(User newOwner) {
+        this.owner = newOwner;
+    }
 }
