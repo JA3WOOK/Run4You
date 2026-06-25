@@ -14,6 +14,7 @@ import { StoreReceipt } from "./pages/store/StoreReceipt";
 import { StoreASForm } from "./pages/store/StoreASForm";
 import { StoreDispatch } from "./pages/store/StoreDispatch";
 import { EngStatus } from "./pages/engineer/EngStatus";
+import BrandAdminUsersPage from "./pages/BrandAdminUsersPage";
 
 const screenLabels: Record<string, string> = {
   "store-home": "기자재 현황",
@@ -27,6 +28,7 @@ const screenLabels: Record<string, string> = {
   "admin-dashboard": "통합 관제 대시보드",
   "admin-equipment": "기자재 관리",
   "admin-billing": "정산 관리",
+  "admin-users": "회원 승인 관리",
   "super-dashboard": "전체 통계 대시보드",
   "super-brands": "브랜드 관리",
   "super-users": "회원 관리",
@@ -66,6 +68,7 @@ function Dashboard() {
           {screen === "store-home" && <StoreHome onRequestAS={() => setScreen("store-as-form")} />}
           {screen === "store-as-form" && <StoreASForm onComplete={() => setScreen("store-home")} />}
           {screen === "store-receipt" && <StoreReceipt />}
+          {screen === "admin-users" && <BrandAdminUsersPage />}
           {screen === "store-dispatch" && <StoreDispatch assignmentId={1} />}
           {screen === "eng-status" && (
               <EngStatus assignmentId={1} onComplete={() => setScreen("eng-queue")} />
