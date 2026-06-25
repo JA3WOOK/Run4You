@@ -63,3 +63,13 @@ export async function rejectUser(token: string, id: number): Promise<User> {
   const res = await api.patch(`/users/${id}/reject`, {}, { headers: authHeader(token) });
   return res.data.data;
 }
+
+export async function deactivateUser(token: string, id: number): Promise<User> {
+  const res = await api.patch(`/users/${id}/deactivate`, {}, { headers: authHeader(token) });
+  return res.data.data;
+}
+
+export async function activateUser(token: string, id: number): Promise<User> {
+  const res = await api.patch(`/users/${id}/activate`, {}, { headers: authHeader(token) });
+  return res.data.data;
+}

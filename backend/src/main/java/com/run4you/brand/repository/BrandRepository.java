@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface BrandRepository extends JpaRepository<Brand, Long> {
     boolean existsByBusinessNo(String businessNo);
+    java.util.Optional<Brand> findByBusinessNo(String businessNo);
     List<Brand> findAllByStatus(BrandStatus status);
 }

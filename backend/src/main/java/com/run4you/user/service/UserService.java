@@ -67,6 +67,26 @@ public class UserService {
         return new UserResponse(target);
     }
 
+    @Transactional
+    public UserResponse deactivate(Long id) {
+        User target = findUser(id);
+        if (target.getRole() == Role.SUPER_ADMIN) {
+            throw new IllegalStateException("플랫폼 총괄 계정은 비활성화할 수 없습니다.");
+        }
+        target.deactivate();
+        return new UserResponse(target);
+    }
+
+    @Transactional
+    public UserResponse activate(Long id) {
+        User target = findUser(id);
+        if (target.getStatus() != UserStatus.INACTIVE) {
+            throw new IllegalStateException("비활성화된 계정이 아닙니다.");
+        }
+        target.activate();
+        return new UserResponse(target);
+    }
+
     private void validateAuthority(User requester, User target) {
         if (requester.getRole() == Role.BRAND_ADMIN) {
             if (!requester.getBrandId().equals(target.getBrandId())) {

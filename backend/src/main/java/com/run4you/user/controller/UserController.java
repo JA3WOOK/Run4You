@@ -46,4 +46,16 @@ public class UserController {
             @AuthenticationPrincipal String email) {
         return ResponseEntity.ok(ApiResponse.success(userService.reject(id, email)));
     }
+
+    @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<UserResponse>> deactivate(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(userService.deactivate(id)));
+    }
+
+    @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<UserResponse>> activate(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(userService.activate(id)));
+    }
 }

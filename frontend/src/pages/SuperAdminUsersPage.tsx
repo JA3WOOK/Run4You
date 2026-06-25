@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUsers, approveUser, rejectUser, type User } from '../api/admin';
+import { getUsers, approveUser, rejectUser, deactivateUser, activateUser, type User } from '../api/admin';
 
 const roleLabel: Record<string, string> = {
   SUPER_ADMIN: '플랫폼 총괄',
@@ -43,6 +43,18 @@ export default function SuperAdminUsersPage() {
     setUsers(prev => prev.map(u => u.id === id ? updated : u));
   }
 
+  async function handleDeactivate(id: number) {
+    if (!accessToken) return;
+    const updated = await deactivateUser(accessToken, id);
+    setUsers(prev => prev.map(u => u.id === id ? updated : u));
+  }
+
+  async function handleActivate(id: number) {
+    if (!accessToken) return;
+    const updated = await activateUser(accessToken, id);
+    setUsers(prev => prev.map(u => u.id === id ? updated : u));
+  }
+
   if (loading) return <div style={{ color: 'var(--muted-foreground)', padding: 32 }}>불러오는 중...</div>;
 
   return (
@@ -79,21 +91,36 @@ export default function SuperAdminUsersPage() {
                 )}
               </div>
 
-              {/* 승인/거절 버튼 */}
-              {user.status === 'PENDING' && (
-                <div className="flex gap-2">
-                  <button onClick={() => handleApprove(user.id)}
+              <div className="flex gap-2">
+                {user.status === 'PENDING' && (
+                  <>
+                    <button onClick={() => handleApprove(user.id)}
+                      className="px-4 py-1.5 rounded-lg"
+                      style={{ background: '#16A34A', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                      승인
+                    </button>
+                    <button onClick={() => handleReject(user.id)}
+                      className="px-4 py-1.5 rounded-lg"
+                      style={{ background: '#DC2626', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                      거절
+                    </button>
+                  </>
+                )}
+                {user.status === 'ACTIVE' && user.role !== 'SUPER_ADMIN' && (
+                  <button onClick={() => handleDeactivate(user.id)}
                     className="px-4 py-1.5 rounded-lg"
-                    style={{ background: '#16A34A', color: '#fff', fontSize: 13, fontWeight: 600 }}>
-                    승인
+                    style={{ background: '#475569', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    비활성화
                   </button>
-                  <button onClick={() => handleReject(user.id)}
+                )}
+                {user.status === 'INACTIVE' && (
+                  <button onClick={() => handleActivate(user.id)}
                     className="px-4 py-1.5 rounded-lg"
-                    style={{ background: '#DC2626', color: '#fff', fontSize: 13, fontWeight: 600 }}>
-                    거절
+                    style={{ background: '#2563EB', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    활성화
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ))}
         </div>

@@ -44,4 +44,12 @@ public class User {
     public void reject() {
         this.status = UserStatus.INACTIVE;
     }
+
+    public void deactivate() {
+        this.status = UserStatus.INACTIVE;
+    }
+
+    public void activate() {
+        this.status = UserStatus.ACTIVE;
+    }
 }
