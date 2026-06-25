@@ -70,12 +70,12 @@ public class MatchingService {
      *  ④ 종합 점수 내림차순 정렬
      *  ⑤ DTO 변환 (순위 1부터)
      */
-    public List<MatchingQueueItemResponse> getMatchingQueue(Long engineerUserId) {
-        EngineerProfile engineer = getEngineerProfile(engineerUserId);
+    public List<MatchingQueueItemResponse> getMatchingQueue(String email) {
+        EngineerProfile engineer = getEngineerProfile(email);
 
         if (!engineer.isDispatchable()) {
-            log.info("[매칭 대기열] 비가용 상태 — userId={}, status={}",
-                    engineerUserId, engineer.getAvailabilityStatus());
+            log.info("[매칭 대기열] 비가용 상태 — email={}, status={}",
+                    email, engineer.getAvailabilityStatus());
             return List.of();
         }
 
@@ -120,9 +120,9 @@ public class MatchingService {
      * 특정 AS 요청의 상세 정보와 해당 엔지니어의 스코어를 반환한다.
      * "출동 수락하기" 버튼 누르기 전 상세 확인 화면.
      */
-    public AssignmentDetailResponse getRequestDetail(Long asRequestId, Long engineerUserId) {
+    public AssignmentDetailResponse getRequestDetail(Long asRequestId, String email) {
         AsRequest req      = getAsRequest(asRequestId);
-        EngineerProfile ep = getEngineerProfile(engineerUserId);
+        EngineerProfile ep = getEngineerProfile(email);
         var store          = req.getStore();
 
         validateReceived(req);
@@ -163,16 +163,15 @@ public class MatchingService {
      * @return 생성된 Assignment 엔티티
      */
     @Transactional
-    public Assignment acceptAssignment(Long asRequestId, Long engineerUserId) {
+    public Assignment acceptAssignment(Long asRequestId, String email) {
         return lockManager.executeWithLock(asRequestId, () -> {
-            log.info("[수락] 분산 락 획득 — asRequestId={}, engineerUserId={}",
-                    asRequestId, engineerUserId);
+            log.info("[수락] 분산 락 획득 — asRequestId={}, email={}", asRequestId, email);
 
             // ① 락 획득 후 상태 재확인 (Double-Check)
             AsRequest req      = getAsRequest(asRequestId);
             validateReceived(req);   // RECEIVED가 아니면 AlreadyAssignedException
 
-            EngineerProfile ep   = getEngineerProfile(engineerUserId);
+            EngineerProfile ep   = getEngineerProfile(email);
             User engineerUser    = ep.getUser();
             var  store           = req.getStore();
             int  activeCount     = assignmentRepository.countActiveByEngineerId(engineerUser.getId());
@@ -253,10 +252,10 @@ public class MatchingService {
     //  내부 헬퍼
     // ─────────────────────────────────────────────────────────────────
 
-    private EngineerProfile getEngineerProfile(Long userId) {
-        return engineerProfileRepository.findByUserId(userId)
+    private EngineerProfile getEngineerProfile(String email) {
+        return engineerProfileRepository.findByUserEmail(email)
                 .orElseThrow(() -> new EngineerNotFoundException(
-                        "엔지니어 프로필을 찾을 수 없습니다. userId=" + userId));
+                        "엔지니어 프로필을 찾을 수 없습니다. email=" + email));
     }
 
     private AsRequest getAsRequest(Long asRequestId) {

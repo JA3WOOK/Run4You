@@ -26,5 +26,7 @@ public interface EngineerProfileRepository extends JpaRepository<EngineerProfile
             """)
     List<EngineerProfile> findAllDispatchable();
 
+    Optional<EngineerProfile> findByUserEmail(String email);
+
     boolean existsByUserId(Long userId);
 }

@@ -12,8 +12,7 @@ import { ToastNotification } from "./components/common/ToastNotification";
 import { StoreHome } from "./pages/store/StoreHome";
 import { StoreReceipt } from "./pages/store/StoreReceipt";
 import { StoreASForm } from "./pages/store/StoreASForm";
-// ↓ 추가
-// import { EngQueue } from "./components/engineer/EngQueue";
+import { EngQueue } from "./components/engineer/EngQueue";
 import { EngDetail } from "./components/engineer/EngDetail";
 
 const screenLabels: Record<string, string> = {
@@ -44,10 +43,9 @@ function Dashboard() {
   const { user, signOut } = useAuth();
   const role = (user?.role ?? "STORE_OWNER") as UserRole;
   const [screen, setScreen] = useState<Screen>(defaultScreen[role]);
-  // ↓ 추가: 엔지니어 화면 전용 선택된 AS 요청 ID
+  // 엔지니어 화면 전용 선택된 AS 요청 ID
   const [selectedAsRequestId, setSelectedAsRequestId] = useState<number | null>(null);
-
-  // ↓ 추가: 사이드바 화면 전환 시 상태 초기화
+  // 사이드바 화면 전환 시 상태 초기화
   const handleScreenChange = (s: Screen) => {
     if (s === "eng-queue") setSelectedAsRequestId(null);
     setScreen(s);
@@ -76,15 +74,15 @@ function Dashboard() {
             {screen === "store-as-form" && <StoreASForm onComplete={() => setScreen("store-home")} />}
             {screen === "store-receipt" && <StoreReceipt />}
 
-            {/* ↓ 추가: 엔지니어 화면 */}
-            {/*{screen === "eng-queue" && (*/}
-            {/*    <EngQueue*/}
-            {/*        onSelect={(asRequestId) => {*/}
-            {/*          setSelectedAsRequestId(asRequestId);*/}
-            {/*          setScreen("eng-detail");*/}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*)}*/}
+             {/*엔지니어 화면*/}
+            {screen === "eng-queue" && (
+                <EngQueue
+                    onSelect={(asRequestId) => {
+                      setSelectedAsRequestId(asRequestId);
+                      setScreen("eng-detail");
+                    }}
+                />
+            )}
             {screen === "eng-detail" && selectedAsRequestId && (
                 <EngDetail
                     asRequestId={selectedAsRequestId}

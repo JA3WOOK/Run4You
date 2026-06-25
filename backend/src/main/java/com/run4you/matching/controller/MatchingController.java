@@ -29,9 +29,9 @@ public class MatchingController {
     @GetMapping("/queue")
     @PreAuthorize("hasRole('ENGINEER')")
     public ResponseEntity<ApiResponse<List<MatchingQueueItemResponse>>> getMatchingQueue(
-            @AuthenticationPrincipal Long engineerUserId
+            @AuthenticationPrincipal String email
     ) {
-        List<MatchingQueueItemResponse> queue = matchingService.getMatchingQueue(engineerUserId);
+        List<MatchingQueueItemResponse> queue = matchingService.getMatchingQueue(email);
         return ResponseEntity.ok(ApiResponse.success(queue));
     }
 
@@ -44,9 +44,9 @@ public class MatchingController {
     @PreAuthorize("hasRole('ENGINEER')")
     public ResponseEntity<ApiResponse<AssignmentDetailResponse>> getRequestDetail(
             @PathVariable Long asRequestId,
-            @AuthenticationPrincipal Long engineerUserId
+            @AuthenticationPrincipal String email
     ) {
-        AssignmentDetailResponse detail = matchingService.getRequestDetail(asRequestId, engineerUserId);
+        AssignmentDetailResponse detail = matchingService.getRequestDetail(asRequestId, email);
         return ResponseEntity.ok(ApiResponse.success(detail));
     }
 
@@ -59,9 +59,9 @@ public class MatchingController {
     @PreAuthorize("hasRole('ENGINEER')")
     public ResponseEntity<ApiResponse<Long>> acceptAssignment(
             @PathVariable Long asRequestId,
-            @AuthenticationPrincipal Long engineerUserId
+            @AuthenticationPrincipal String email
     ) {
-        Assignment assignment = matchingService.acceptAssignment(asRequestId, engineerUserId);
+        Assignment assignment = matchingService.acceptAssignment(asRequestId, email);
         return ResponseEntity.ok(ApiResponse.success(assignment.getId()));
     }
 

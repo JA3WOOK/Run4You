@@ -1,9 +1,5 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
-function getToken() {
-  return localStorage.getItem("token");
-}
-
 function authHeaders() {
   return {
     "Content-Type": "application/json",
@@ -71,9 +67,12 @@ export interface AssignmentDetail {
 // ─── API 호출 ─────────────────────────────────────────────────────
 
 /** 출동 대기열 조회 — GET /api/assignments/queue */
-export async function fetchMatchingQueue(): Promise<MatchingQueueItem[]> {
+export async function fetchMatchingQueue(token: string | null): Promise<MatchingQueueItem[]> {
   const res = await fetch(`${BASE_URL}/api/assignments/queue`, {
-    headers: authHeaders(),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   });
   if (!res.ok) throw new Error("대기열 조회 실패");
   const body = await res.json();
@@ -81,9 +80,12 @@ export async function fetchMatchingQueue(): Promise<MatchingQueueItem[]> {
 }
 
 /** 출동 상세 조회 — GET /api/assignments/requests/{id}/detail */
-export async function fetchRequestDetail(asRequestId: number): Promise<AssignmentDetail> {
+export async function fetchRequestDetail(asRequestId: number, token: string | null): Promise<AssignmentDetail> {
   const res = await fetch(`${BASE_URL}/api/assignments/requests/${asRequestId}/detail`, {
-    headers: authHeaders(),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   });
   if (!res.ok) throw new Error("상세 조회 실패");
   const body = await res.json();
@@ -91,10 +93,13 @@ export async function fetchRequestDetail(asRequestId: number): Promise<Assignmen
 }
 
 /** 수락 — POST /api/assignments/requests/{id}/accept */
-export async function acceptAssignment(asRequestId: number): Promise<number> {
+export async function acceptAssignment(asRequestId: number, token: string | null): Promise<number> {
   const res = await fetch(`${BASE_URL}/api/assignments/requests/${asRequestId}/accept`, {
     method: "POST",
-    headers: authHeaders(),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   });
   if (res.status === 409) throw new Error("이미 다른 엔지니어가 수락했습니다.");
   if (!res.ok) throw new Error("수락 처리 실패");
