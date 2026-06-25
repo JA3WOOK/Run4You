@@ -49,6 +49,11 @@ export async function getUsers(token: string): Promise<User[]> {
   return res.data.data;
 }
 
+export async function getPendingUsers(token: string): Promise<User[]> {
+  const res = await api.get('/users/pending', { headers: authHeader(token) });
+  return res.data.data;
+}
+
 export async function approveUser(token: string, id: number): Promise<User> {
   const res = await api.patch(`/users/${id}/approve`, {}, { headers: authHeader(token) });
   return res.data.data;

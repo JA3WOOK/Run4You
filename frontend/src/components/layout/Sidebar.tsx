@@ -8,7 +8,7 @@ export type UserRole = "STORE_OWNER" | "ENGINEER" | "BRAND_ADMIN" | "SUPER_ADMIN
 export type Screen =
     | "store-home" | "store-as-form" | "store-dispatch" | "store-receipt"
     | "eng-queue" | "eng-detail" | "eng-status" | "eng-report"
-    | "admin-dashboard" | "admin-equipment" | "admin-billing"
+    | "admin-dashboard" | "admin-equipment" | "admin-billing" | "admin-users"
     | "super-dashboard" | "super-brands" | "super-users";
 
 interface SidebarProps {
@@ -52,6 +52,7 @@ const navItems: Record<UserRole, { label: string; screen: Screen; icon: React.Re
         { label: "통합 관제 대시보드", screen: "admin-dashboard", icon: <LayoutDashboard size={19} /> },
         { label: "기자재 관리", screen: "admin-equipment", icon: <Package size={19} /> },
         { label: "정산 관리", screen: "admin-billing", icon: <CreditCard size={19} /> },
+        { label: "회원 승인 관리", screen: "admin-users", icon: <Users size={19} /> },
     ],
     SUPER_ADMIN: [
         { label: "전체 통계 대시보드", screen: "super-dashboard", icon: <BarChart3 size={19} /> },

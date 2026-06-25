@@ -4,6 +4,7 @@ import com.run4you.dispatch.domain.DispatchStatus;
 import com.run4you.dispatch.port.AssignmentGateway;
 import com.run4you.dispatch.port.ControlCenterGateway;
 import com.run4you.dispatch.port.LocationGateway;
+import com.run4you.dispatch.port.UserLookupPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ import java.util.Optional;
  */
 @Component
 @RequiredArgsConstructor
-public class JdbcDispatchGateway implements AssignmentGateway, LocationGateway, ControlCenterGateway {
+public class JdbcDispatchGateway implements AssignmentGateway, LocationGateway, ControlCenterGateway, UserLookupPort {
 
     private final JdbcTemplate jdbc;
 
@@ -126,5 +127,16 @@ public class JdbcDispatchGateway implements AssignmentGateway, LocationGateway, 
                    AND ( role = 'SUPER_ADMIN'
                       OR (role = 'BRAND_ADMIN' AND brand_id = ?) )
                 """, Long.class, brandId);
+    }
+    // ── UserLookupPort ─────────────────────────────────────────────────
+    @Override
+    public Long findIdByEmail(String email) {
+        return jdbc.query(
+                        "SELECT id FROM users WHERE email = ? AND deleted_at IS NULL",
+                        (rs, i) -> rs.getLong("id"),
+                        email
+                ).stream().findFirst()
+                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException(
+                        "계정을 찾을 수 없습니다: " + email));
     }
 }

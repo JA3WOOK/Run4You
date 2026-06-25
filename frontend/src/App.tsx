@@ -12,8 +12,11 @@ import { ToastNotification } from "./components/common/ToastNotification";
 import { StoreHome } from "./pages/store/StoreHome";
 import { StoreReceipt } from "./pages/store/StoreReceipt";
 import { StoreASForm } from "./pages/store/StoreASForm";
+import { StoreDispatch } from "./pages/store/StoreDispatch";
 import { EngQueue } from "./components/engineer/EngQueue";
 import { EngDetail } from "./components/engineer/EngDetail";
+import { EngStatus } from "./pages/engineer/EngStatus";
+import BrandAdminUsersPage from "./pages/BrandAdminUsersPage";
 
 const screenLabels: Record<string, string> = {
   "store-home": "기자재 현황",
@@ -27,6 +30,7 @@ const screenLabels: Record<string, string> = {
   "admin-dashboard": "통합 관제 대시보드",
   "admin-equipment": "기자재 관리",
   "admin-billing": "정산 관리",
+  "admin-users": "회원 승인 관리",
   "super-dashboard": "전체 통계 대시보드",
   "super-brands": "브랜드 관리",
   "super-users": "회원 관리",
@@ -43,9 +47,9 @@ function Dashboard() {
   const { user, signOut } = useAuth();
   const role = (user?.role ?? "STORE_OWNER") as UserRole;
   const [screen, setScreen] = useState<Screen>(defaultScreen[role]);
-  // 엔지니어 화면 전용 선택된 AS 요청 ID
   const [selectedAsRequestId, setSelectedAsRequestId] = useState<number | null>(null);
-  // 사이드바 화면 전환 시 상태 초기화
+  const [acceptedAssignmentId, setAcceptedAssignmentId] = useState<number | null>(null);
+
   const handleScreenChange = (s: Screen) => {
     if (s === "eng-queue") setSelectedAsRequestId(null);
     setScreen(s);
@@ -59,7 +63,7 @@ function Dashboard() {
         <Sidebar
             role={role}
             screen={screen}
-            onScreenChange={handleScreenChange}  // ← setScreen → handleScreenChange
+            onScreenChange={handleScreenChange}
             onRoleChange={() => {}}
             notifications={3}
             userName={user?.name ?? ''}
@@ -68,13 +72,14 @@ function Dashboard() {
         <main className="flex-1 overflow-y-auto">
           <Header screenLabel={screenLabels[screen] ?? screen} currentTime="2026-06-15 14:32" />
           <div className="px-8 py-6">
-            {screen === "super-brands" && <SuperAdminBrandsPage />}
-            {screen === "super-users" && <SuperAdminUsersPage />}
+
+            {/* ── 점주 ── */}
             {screen === "store-home" && <StoreHome onRequestAS={() => setScreen("store-as-form")} />}
             {screen === "store-as-form" && <StoreASForm onComplete={() => setScreen("store-home")} />}
             {screen === "store-receipt" && <StoreReceipt />}
+            {screen === "store-dispatch" && <StoreDispatch assignmentId={1} />}
 
-             {/*엔지니어 화면*/}
+            {/* ── 엔지니어 ── */}
             {screen === "eng-queue" && (
                 <EngQueue
                     onSelect={(asRequestId) => {
@@ -90,12 +95,27 @@ function Dashboard() {
                       setSelectedAsRequestId(null);
                       setScreen("eng-queue");
                     }}
-                    onAccepted={() => {
+                    onAccepted={(assignmentId) => {
+                      setAcceptedAssignmentId(assignmentId);
                       setSelectedAsRequestId(null);
                       setScreen("eng-status");
                     }}
                 />
             )}
+            {screen === "eng-status" && (
+                <EngStatus
+                    assignmentId={acceptedAssignmentId ?? 1}
+                    onComplete={() => setScreen("eng-queue")}
+                />
+            )}
+
+            {/* ── 본사 관리자 ── */}
+            {screen === "admin-users" && <BrandAdminUsersPage />}
+
+            {/* ── 플랫폼 총괄 ── */}
+            {screen === "super-brands" && <SuperAdminBrandsPage />}
+            {screen === "super-users" && <SuperAdminUsersPage />}
+
           </div>
         </main>
         <ToastNotification />
