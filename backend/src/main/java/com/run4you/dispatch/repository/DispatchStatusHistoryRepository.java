@@ -1,6 +1,6 @@
 package com.run4you.dispatch.repository;
 
-import com.run4you.dispatch.entity.DispatchStatus;
+import com.run4you.dispatch.domain.DispatchStatus;
 import com.run4you.dispatch.entity.DispatchStatusHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
