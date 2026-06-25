@@ -3,7 +3,7 @@ package com.run4you.asrequest.repository;
 import com.run4you.asrequest.dto.ReceiptListResponseDto;
 import com.run4you.asrequest.entity.AsRequest;
 import com.run4you.asrequest.entity.AsStatus;
-import com.run4you.dispatch.entity.DispatchStatus;
+import com.run4you.dispatch.domain.DispatchStatus;
 import com.run4you.equipment.entity.EquipmentCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

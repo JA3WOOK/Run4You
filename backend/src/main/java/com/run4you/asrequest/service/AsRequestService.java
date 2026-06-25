@@ -4,7 +4,7 @@ import com.run4you.asrequest.dto.*;
 import com.run4you.asrequest.entity.AsRequest;
 import com.run4you.asrequest.entity.AsStatus;
 import com.run4you.asrequest.repository.AsRequestRepository;
-import com.run4you.dispatch.entity.DispatchStatus;
+import com.run4you.dispatch.domain.DispatchStatus;
 import com.run4you.dispatch.repository.DispatchStatusHistoryRepository;
 import com.run4you.equipment.entity.Equipment;
 import com.run4you.equipment.entity.EquipmentStatus;
