@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/run4you?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: CHANGE_ME          # ★ 본인 MySQL 비밀번호로 변경
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate          # 엔티티 ↔ 실제 테이블 정합성 기동 시 검증
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+    open-in-view: false
+
+logging:
+  level:
+    com.runforyou: DEBUG
+    org.hibernate.SQL: INFO

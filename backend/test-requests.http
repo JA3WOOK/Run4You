@@ -1,0 +1,74 @@
+### 출동 관제(④) 수동 테스트 요청 모음
+### IntelliJ HTTP Client(.http) 또는 curl 로 사용. dev 프로파일로 앱 실행 필요.
+### SSE 구독(아래 0번)은 .http 보다 별도 터미널 curl 이 보기 편함.
+
+@host = http://localhost:8080
+
+### 0. (점주) SSE 구독 — 별도 터미널 curl 권장 (연결 유지)
+### curl -N -H "X-USER-ID: 3" -H "X-USER-ROLE: STORE_OWNER" http://localhost:8080/api/notifications/subscribe
+
+### 1. (엔지니어) 출동 시작 — DISPATCHED, 현재 좌표 전송 → ETA 산출
+PATCH {{host}}/api/assignments/1/status
+Content-Type: application/json
+X-USER-ID: 4
+X-USER-ROLE: ENGINEER
+
+{ "status": "DISPATCHED", "latitude": 37.5012, "longitude": 127.0396 }
+
+### 2. (엔지니어) 이동 중 위치만 갱신 → location 이벤트 (상태 변경 X)
+POST {{host}}/api/assignments/1/location
+Content-Type: application/json
+X-USER-ID: 4
+X-USER-ROLE: ENGINEER
+
+{ "latitude": 37.5000, "longitude": 127.0300 }
+
+### 3. (엔지니어) 현장 도착 — ARRIVED (ETA=0)
+PATCH {{host}}/api/assignments/1/status
+Content-Type: application/json
+X-USER-ID: 4
+X-USER-ROLE: ENGINEER
+
+{ "status": "ARRIVED" }
+
+### 4. (엔지니어) 수리 개시 — REPAIRING (MVP: 교육 게이트 없이 통과)
+PATCH {{host}}/api/assignments/1/status
+Content-Type: application/json
+X-USER-ID: 4
+X-USER-ROLE: ENGINEER
+
+{ "status": "REPAIRING" }
+
+### 5. (엔지니어) 수리 완료 — COMPLETED
+PATCH {{host}}/api/assignments/1/status
+Content-Type: application/json
+X-USER-ID: 4
+X-USER-ROLE: ENGINEER
+
+{ "status": "COMPLETED" }
+
+### 6. (점주) 실시간 추적 — 현재 상태/ETA/타임라인
+GET {{host}}/api/assignments/1/tracking
+X-USER-ID: 3
+X-USER-ROLE: STORE_OWNER
+
+### 7. (점주) 알림 목록 + 미읽음 수
+GET {{host}}/api/notifications/me
+X-USER-ID: 3
+X-USER-ROLE: STORE_OWNER
+
+### 8. (실패) 잘못된 전이 — COMPLETED 이후 DISPATCHED → 409
+PATCH {{host}}/api/assignments/1/status
+Content-Type: application/json
+X-USER-ID: 4
+X-USER-ROLE: ENGINEER
+
+{ "status": "DISPATCHED" }
+
+### 9. (실패) 남의 배정 변경 — 엔지니어 99 → 403
+PATCH {{host}}/api/assignments/1/status
+Content-Type: application/json
+X-USER-ID: 99
+X-USER-ROLE: ENGINEER
+
+{ "status": "DISPATCHED" }
