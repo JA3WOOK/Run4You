@@ -36,6 +36,10 @@ public class AuthService {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
+        if (request.getRole() == Role.SUPER_ADMIN || request.getRole() == Role.BRAND_ADMIN) {
+            throw new IllegalArgumentException("해당 역할로는 가입할 수 없습니다.");
+        }
+
         if ((request.getRole() == Role.STORE_OWNER || request.getRole() == Role.ENGINEER)
                 && request.getBrandId() == null) {
             throw new IllegalArgumentException("브랜드를 선택해주세요.");
