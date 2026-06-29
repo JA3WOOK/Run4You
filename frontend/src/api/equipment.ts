@@ -5,11 +5,12 @@ const api = axios.create({ baseURL: 'http://localhost:8080/api' });
 function authHeader(token: string) {
     return { Authorization: `Bearer ${token}` };
 }
+export type EquipmentCategory = 'KIOSK' | 'ESPRESSO' | 'ICE_MAKER' | 'REFRIGERATOR';
 
 // 기자재 카드 1개 (EquipmentResponseDto)
 export interface Equipment {
     id: number;
-    category: 'KIOSK' | 'ESPRESSO' | 'ICE_MAKER' | 'REFRIGERATOR';
+    category: EquipmentCategory;
     name: string;
     modelName: string;
     serialNo: string;
@@ -31,7 +32,7 @@ export interface EquipmentListResponse {
 // 기자재 등록 폼 (EquipmentCreateDto)
 export interface EquipmentCreateRequest {
     name: string;
-    category: 'KIOSK' | 'ESPRESSO' | 'ICE_MAKER' | 'REFRIGERATOR';
+    category: EquipmentCategory;
     modelName: string;
     manufacturer: string;
     serialNo: string;

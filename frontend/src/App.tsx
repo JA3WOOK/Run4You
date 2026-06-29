@@ -53,6 +53,7 @@ function Dashboard() {
   const [screen, setScreen] = useState<Screen>(defaultScreen[role]);
   const [selectedAsRequestId, setSelectedAsRequestId] = useState<number | null>(null);
   const [acceptedAssignmentId, setAcceptedAssignmentId] = useState<number | null>(null);
+  const [trackAssignmentId, setTrackAssignmentId] = useState<number | null>(null);
 
   const handleScreenChange = (s: Screen) => {
     if (s === "eng-queue") setSelectedAsRequestId(null);
@@ -78,10 +79,19 @@ function Dashboard() {
           <div className="px-8 py-6">
 
             {/* ── 점주 ── */}
-            {screen === "store-home" && <StoreHome onRequestAS={() => setScreen("store-as-form")} />}
+            {screen === "store-home" && (
+                <StoreHome
+                    onRequestAS={() => setScreen("store-as-form")}
+                    onGoReceipts={() => setScreen("store-receipt")}
+                    onTrack={(assignmentId) => {
+                      setTrackAssignmentId(assignmentId);
+                      setScreen("store-dispatch");
+                    }}
+                />
+            )}
             {screen === "store-as-form" && <StoreASForm onComplete={() => setScreen("store-home")} />}
             {screen === "store-receipt" && <StoreReceipt />}
-            {screen === "store-dispatch" && <StoreDispatch assignmentId={1} />}
+            {screen === "store-dispatch" && <StoreDispatch assignmentId={trackAssignmentId ?? 1} />}
 
             {/* ── 엔지니어 ── */}
             {screen === "eng-queue" && (
