@@ -8,6 +8,9 @@ import com.run4you.auth.security.JwtProvider;
 import com.run4you.brand.entity.Brand;
 import com.run4you.brand.entity.BrandStatus;
 import com.run4you.brand.repository.BrandRepository;
+import com.run4you.matching.entity.EngineerProfile;
+import com.run4you.matching.entity.EngineerSpecialty;
+import com.run4you.matching.repository.EngineerProfileRepository;
 import com.run4you.user.entity.Role;
 import com.run4you.user.entity.User;
 import com.run4you.user.entity.UserStatus;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final BrandRepository brandRepository;
+    private final EngineerProfileRepository engineerProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
@@ -63,7 +68,22 @@ public class AuthService {
                 .brandId(request.getBrandId())
                 .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        if (request.getRole() == Role.ENGINEER) {
+            EngineerProfile profile = EngineerProfile.builder()
+                    .user(savedUser)
+                    .build();
+            EngineerProfile savedProfile = engineerProfileRepository.save(profile);
+
+            List<String> specialties = request.getSpecialties();
+            if (specialties != null && !specialties.isEmpty()) {
+                for (String category : specialties) {
+                    savedProfile.getSpecialties().add(EngineerSpecialty.of(savedProfile, category));
+                }
+                engineerProfileRepository.save(savedProfile);
+            }
+        }
     }
 
     @Transactional

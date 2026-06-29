@@ -9,6 +9,7 @@ import com.run4you.equipment.entity.EquipmentCategory;
 import com.run4you.equipment.entity.EquipmentStatus;
 import com.run4you.equipment.repository.EquipmentRepository;
 import com.run4you.matching.entity.EngineerProfile;
+import com.run4you.matching.entity.EngineerSpecialty;
 import com.run4you.matching.repository.EngineerProfileRepository;
 import com.run4you.store.entity.Store;
 import com.run4you.store.repository.StoreRepository;
@@ -19,12 +20,15 @@ import com.run4you.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Profile("dev")
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
@@ -37,6 +41,7 @@ public class DataInitializer implements ApplicationRunner {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public void run(ApplicationArguments args) {
         // SUPER_ADMIN
         if (!userRepository.existsByEmail("admin@run4you.com")) {
@@ -264,5 +269,24 @@ public class DataInitializer implements ApplicationRunner {
                     .skillGrade("BEGINNER")
                     .build());
         }
+
+        // 엔지니어 전문분야 (specialty 없을 때만 추가)
+        engineerProfileRepository.findByUserId(engineer1.getId()).ifPresent(profile -> {
+            if (profile.getSpecialties().isEmpty()) {
+                profile.getSpecialties().add(EngineerSpecialty.of(profile, "KIOSK"));
+                profile.getSpecialties().add(EngineerSpecialty.of(profile, "ESPRESSO"));
+                engineerProfileRepository.save(profile);
+            }
+        });
+
+        engineerProfileRepository.findByUserId(engineer2.getId()).ifPresent(profile -> {
+            if (profile.getSpecialties().isEmpty()) {
+                profile.getSpecialties().add(EngineerSpecialty.of(profile, "KIOSK"));
+                profile.getSpecialties().add(EngineerSpecialty.of(profile, "ICE_MAKER"));
+                engineerProfileRepository.save(profile);
+            }
+        });
+
     }
+
 }

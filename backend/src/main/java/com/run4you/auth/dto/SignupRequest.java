@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class SignupRequest {
 
@@ -25,4 +27,6 @@ public class SignupRequest {
     private Role role;
 
     private Long brandId;
+
+    private List<String> specialties;
 }

@@ -19,6 +19,7 @@ export interface SignupRequest {
   phone?: string;
   role: 'STORE_OWNER' | 'ENGINEER';
   brandId: number;
+  specialties?: string[];
 }
 
 export interface BrandSignupRequest {

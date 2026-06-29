@@ -24,6 +24,20 @@ export default function SignupPage() {
     role: 'STORE_OWNER' as 'STORE_OWNER' | 'ENGINEER',
     brandId: '',
   });
+  const [specialties, setSpecialties] = useState<string[]>([]);
+
+  const SPECIALTY_OPTIONS = [
+    { value: 'KIOSK', label: '키오스크' },
+    { value: 'ESPRESSO', label: '에스프레소 머신' },
+    { value: 'ICE_MAKER', label: '제빙기' },
+    { value: 'REFRIGERATOR', label: '냉장·냉동 장비' },
+  ];
+
+  function toggleSpecialty(value: string) {
+    setSpecialties(prev =>
+      prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value]
+    );
+  }
 
   async function handleBrandSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +65,7 @@ export default function SignupPage() {
       await signup({
         ...memberForm,
         brandId: Number(memberForm.brandId),
+        ...(memberForm.role === 'ENGINEER' && { specialties }),
       });
       setSuccess('가입 신청이 완료되었습니다. 관리자 승인 후 로그인 가능합니다.');
       setTimeout(() => navigate('/login'), 2000);
@@ -208,7 +223,7 @@ export default function SignupPage() {
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label style={{ fontSize: 14 }}>역할</label>
                   <select className="w-full px-4 py-2.5 rounded-lg outline-none" style={inputStyle}
-                    value={memberForm.role} onChange={e => setMemberForm(p => ({ ...p, role: e.target.value as 'STORE_OWNER' | 'ENGINEER' }))}>
+                    value={memberForm.role} onChange={e => { setMemberForm(p => ({ ...p, role: e.target.value as 'STORE_OWNER' | 'ENGINEER' })); setSpecialties([]); }}>
                     <option value="STORE_OWNER">매장주</option>
                     <option value="ENGINEER">엔지니어</option>
                   </select>
@@ -220,6 +235,26 @@ export default function SignupPage() {
                     placeholder="1" required />
                 </div>
               </div>
+              {memberForm.role === 'ENGINEER' && (
+                <div className="flex flex-col gap-1.5">
+                  <label style={{ fontSize: 14 }}>전문 분야 <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>(복수 선택 가능)</span></label>
+                  <div className="flex flex-wrap gap-2 p-3 rounded-lg" style={{ background: 'var(--muted)', border: '1px solid var(--border)' }}>
+                    {SPECIALTY_OPTIONS.map(opt => (
+                      <label key={opt.value} className="flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg transition-all"
+                        style={{
+                          background: specialties.includes(opt.value) ? 'var(--primary)' : 'var(--card)',
+                          color: specialties.includes(opt.value) ? '#fff' : 'var(--foreground)',
+                          fontSize: 13, fontWeight: 500,
+                          border: `1px solid ${specialties.includes(opt.value) ? 'var(--primary)' : 'var(--border)'}`,
+                        }}>
+                        <input type="checkbox" checked={specialties.includes(opt.value)}
+                          onChange={() => toggleSpecialty(opt.value)} style={{ display: 'none' }} />
+                        {opt.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
               <button type="submit" disabled={loading} className="w-full py-3 rounded-lg mt-2 transition-opacity"
                 style={{ background: 'var(--primary)', color: '#fff', fontSize: 15, fontWeight: 600, opacity: loading ? 0.7 : 1 }}>
                 {loading ? '신청 중...' : '가입 신청'}
