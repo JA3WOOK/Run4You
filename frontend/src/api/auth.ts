@@ -48,3 +48,31 @@ export async function signupBrand(data: BrandSignupRequest): Promise<void> {
 export async function logout(token: string): Promise<void> {
   await api.post('/auth/logout', {}, { headers: authHeader(token) });
 }
+
+export interface MyProfile {
+  id: number;
+  email: string;
+  name: string;
+  phone: string | null;
+  role: string;
+  status: string;
+  brandId: number | null;
+  specialties: string[];
+  rating: number | null;
+  skillGrade: string | null;
+}
+
+export async function getMyProfile(token: string): Promise<MyProfile> {
+  const res = await api.get('/users/me', { headers: authHeader(token) });
+  return res.data.data;
+}
+
+export async function updateMyProfile(token: string, data: {
+  name?: string;
+  phone?: string;
+  currentPassword?: string;
+  newPassword?: string;
+}): Promise<MyProfile> {
+  const res = await api.patch('/users/me', data, { headers: authHeader(token) });
+  return res.data.data;
+}
