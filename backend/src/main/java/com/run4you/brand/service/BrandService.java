@@ -54,6 +54,10 @@ public class BrandService {
             throw new IllegalStateException("승인 대기 중인 브랜드가 아닙니다.");
         }
         brand.reject();
+
+        userRepository.findByBrandIdAndRole(id, Role.BRAND_ADMIN)
+                .ifPresent(User::reject);
+
         return new BrandResponse(brand);
     }
 
