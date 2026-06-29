@@ -279,4 +279,76 @@ public class AsRequestService {
                 .billedAmount(billedAmount)
                 .build();
     }
+
+    // 진행 중인 A/S 목록 (대시보드 테이블용, 완료/취소 제외)
+    @Transactional(readOnly = true)
+    public InProgressAsListResponseDto getInProgressAsList() {
+
+        User requester = getCurrentUser();
+        Store store = getCurrentStore(requester);
+
+        // 1) 진행 중 접수 (완료/취소 제외, 최신순) — equipment는 fetch join으로 미리 로딩
+        List<AsRequest> activeRequests = asRequestRepository.findActiveByStoreId(store.getId());
+
+        // 2) 건별 조립: 배정 → 엔지니어 → 현재 상태/ETA
+        List<InProgressAsListResponseDto.InProgressItemDto> items = activeRequests.stream()
+                .map(req -> {
+                    Equipment eq = req.getEquipment();
+
+                    // 배정 (엔지니어 포함) — 영수증 상세에서 쓰는 메서드 재사용
+                    Assignment assignment = assignmentRepository
+                            .findByAsRequestIdWithEngineer(req.getId())
+                            .orElse(null);
+
+                    Long assignmentId = null;
+                    String engineerName = null;
+                    String engineerPhone = null;
+                    DispatchStatus currentStatus = null;
+                    Integer etaMinutes = null;
+
+                    if (assignment != null) {
+                        assignmentId = assignment.getId();
+
+                        if (assignment.getEngineer() != null) {
+                            engineerName = assignment.getEngineer().getName();
+                            engineerPhone = assignment.getEngineer().getPhone();
+                        }
+
+                        // 최신 이력 1건에서 현재 상태 + ETA 동시 취득
+                        var latest = dispatchStatusHistoryRepository
+                                .findFirstByAssignmentIdOrderByChangedAtDesc(assignment.getId())
+                                .orElse(null);
+                        if (latest != null) {
+                            currentStatus = latest.getStatus();
+                            etaMinutes = latest.getEtaMinutes();
+                        }
+                    }
+
+                    return InProgressAsListResponseDto.InProgressItemDto.builder()
+                            .asRequestId(req.getId())
+                            .requestNo(formatRequestNo(req))
+                            .requestedAt(req.getRequestedAt())
+                            .equipmentId(eq.getId())
+                            .equipmentName(eq.getName())
+                            .modelName(eq.getModelName())
+                            .category(eq.getCategory().name())
+                            .currentStatus(currentStatus)
+                            .assignmentId(assignmentId)
+                            .engineerName(engineerName)
+                            .engineerPhone(engineerPhone)
+                            .etaMinutes(etaMinutes)
+                            .build();
+                })
+                .toList();
+
+        return InProgressAsListResponseDto.builder()
+                .requests(items)
+                .totalCount(items.size())
+                .build();
+    }
+
+    // 접수번호 포맷 (전용 채번 필드 없으므로 연도-ID 조합)
+    private String formatRequestNo(AsRequest req) {
+        return String.format("AS-%d-%04d", req.getRequestedAt().getYear(), req.getId());
+    }
 }

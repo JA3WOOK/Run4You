@@ -106,4 +106,14 @@ public interface AsRequestRepository extends JpaRepository<AsRequest, Long> {
         LIMIT 1
         """)
     Optional<AsRequest> findActiveByEquipmentId(@Param("equipmentId") Long equipmentId);
+
+    // 매장의 진행 중인 A/S 전체 목록 (대시보드 진행 중 테이블용, 완료/취소 제외 최신순)
+    @Query("""
+    SELECT a FROM AsRequest a
+    JOIN FETCH a.equipment
+    WHERE a.store.id = :storeId
+    AND a.status NOT IN ('COMPLETED', 'CANCELLED')
+    ORDER BY a.requestedAt DESC
+    """)
+    List<AsRequest> findActiveByStoreId(@Param("storeId") Long storeId);
 }

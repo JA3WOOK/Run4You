@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { EquipmentCategory } from './equipment';
 
 const api = axios.create({ baseURL: 'http://localhost:8080/api' });
 
@@ -44,5 +45,40 @@ export async function getActiveAsRequestByEquipment(
     equipmentId: number
 ): Promise<AsRequestResponse> {
     const res = await api.get(`/as-requests/by-equipment/${equipmentId}`, { headers: authHeader(token) });
+    return res.data.data;
+}
+
+// 진행 단계 (DispatchStatus name)
+export type DispatchStatusName =
+    | 'PENDING_ACCEPT' | 'ACCEPTED' | 'DISPATCHED'
+    | 'ARRIVED' | 'REPAIRING' | 'COMPLETED' | 'CANCELLED';
+
+// 진행 중 A/S 한 건 (InProgressItemDto)
+export interface InProgressAsItem {
+    asRequestId: number;
+    requestNo: string;
+    requestedAt: string;
+    equipmentId: number;
+    equipmentName: string;
+    modelName: string;
+    category: EquipmentCategory;
+    currentStatus: DispatchStatusName | null;
+    assignmentId: number | null;
+    engineerName: string | null;
+    engineerPhone: string | null;
+    etaMinutes: number | null;
+}
+
+// 진행 중 A/S 목록 응답 (InProgressAsListResponseDto)
+export interface InProgressAsListResponse {
+    requests: InProgressAsItem[];
+    totalCount: number;
+}
+
+// 진행 중인 A/S 목록 조회 (GET /api/as-requests/in-progress)
+export async function getInProgressAsList(
+    token: string
+): Promise<InProgressAsListResponse> {
+    const res = await api.get('/as-requests/in-progress', { headers: authHeader(token) });
     return res.data.data;
 }

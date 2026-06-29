@@ -65,4 +65,11 @@ public class AsRequestController {
         return ResponseEntity.ok(
                 ApiResponse.success(asRequestService.getReceiptDetail(asRequestId)));
     }
+
+    // 진행 중인 A/S 목록 (대시보드 진행 중 테이블용)
+    @GetMapping("/in-progress")
+    public ResponseEntity<ApiResponse<InProgressAsListResponseDto>> getInProgressAsList() {
+        return ResponseEntity.ok(
+                ApiResponse.success(asRequestService.getInProgressAsList()));
+    }
 }
