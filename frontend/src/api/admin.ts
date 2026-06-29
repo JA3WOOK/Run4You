@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const api = axios.create({ baseURL: 'http://localhost:8080/api' });
+import { apiClient as api } from './apiClient';
 
 function authHeader(token: string) {
   return { Authorization: `Bearer ${token}` };

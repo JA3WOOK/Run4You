@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { logout } from '../api/auth';
+import { apiClient, setupUnauthorizedHandler } from '../api/apiClient';
 
 interface JwtPayload {
   sub: string;
@@ -29,6 +31,7 @@ function parseToken(token: string, name: string): AuthUser {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
   const [accessToken, setAccessToken] = useState<string | null>(
     localStorage.getItem('accessToken')
   );
@@ -37,6 +40,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const name = localStorage.getItem('userName') ?? '';
     return token ? parseToken(token, name) : null;
   });
+
+  useEffect(() => {
+    const id = setupUnauthorizedHandler(() => {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userName');
+      setAccessToken(null);
+      setUser(null);
+      navigate('/login', { replace: true });
+    });
+    return () => apiClient.interceptors.response.eject(id);
+  }, []);
 
   function signIn(accessToken: string, refreshToken: string, name: string) {
     localStorage.setItem('accessToken', accessToken);

@@ -106,4 +106,16 @@ public interface AsRequestRepository extends JpaRepository<AsRequest, Long> {
         LIMIT 1
         """)
     Optional<AsRequest> findActiveByEquipmentId(@Param("equipmentId") Long equipmentId);
+
+    // 브랜드별 A/S 총 건수 (SUPER_ADMIN 대시보드)
+    @Query("SELECT b.id, COUNT(a) FROM AsRequest a JOIN a.store s JOIN s.brand b GROUP BY b.id")
+    List<Object[]> countGroupByBrandId();
+
+    // 브랜드별 완료 건수 (SUPER_ADMIN 대시보드)
+    @Query("SELECT b.id, COUNT(a) FROM AsRequest a JOIN a.store s JOIN s.brand b WHERE a.status = 'COMPLETED' GROUP BY b.id")
+    List<Object[]> countCompletedGroupByBrandId();
+
+    // 고장 카테고리별 건수 (SUPER_ADMIN 대시보드)
+    @Query("SELECT a.faultCategory, COUNT(a) FROM AsRequest a WHERE a.faultCategory IS NOT NULL GROUP BY a.faultCategory")
+    List<Object[]> countGroupByFaultCategory();
 }

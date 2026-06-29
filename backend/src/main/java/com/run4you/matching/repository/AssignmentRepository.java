@@ -62,4 +62,15 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
             WHERE a.asRequest.id = :asRequestId
             """)
     Optional<Assignment> findByAsRequestIdWithEngineer(@Param("asRequestId") Long asRequestId);
+
+    /** 브랜드별 평균 처리시간 산출용 — 완료된 배정의 접수시각·완료시각 (SUPER_ADMIN 대시보드) */
+    @Query("""
+            SELECT b.id, ar.requestedAt, a.completedAt
+            FROM Assignment a
+            JOIN a.asRequest ar
+            JOIN ar.store s
+            JOIN s.brand b
+            WHERE a.completedAt IS NOT NULL
+            """)
+    List<Object[]> findCompletedTimesWithBrand();
 }

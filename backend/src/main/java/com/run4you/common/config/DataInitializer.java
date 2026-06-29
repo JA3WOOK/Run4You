@@ -19,12 +19,14 @@ import com.run4you.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Profile("dev")
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
@@ -264,5 +266,7 @@ public class DataInitializer implements ApplicationRunner {
                     .skillGrade("BEGINNER")
                     .build());
         }
+
     }
+
 }
