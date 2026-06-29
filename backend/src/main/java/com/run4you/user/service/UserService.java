@@ -1,5 +1,9 @@
 package com.run4you.user.service;
 
+import com.run4you.matching.entity.EngineerProfile;
+import com.run4you.matching.repository.EngineerProfileRepository;
+import com.run4you.user.dto.MyProfileResponse;
+import com.run4you.user.dto.UpdateMyProfileRequest;
 import com.run4you.user.dto.UserResponse;
 import com.run4you.user.entity.Role;
 import com.run4you.user.entity.User;
@@ -16,6 +20,36 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final EngineerProfileRepository engineerProfileRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @Transactional(readOnly = true)
+    public MyProfileResponse getMe(String email) {
+        User user = findUserByEmail(email);
+        EngineerProfile profile = user.getRole() == Role.ENGINEER
+                ? engineerProfileRepository.findByUserId(user.getId()).orElse(null)
+                : null;
+        return new MyProfileResponse(user, profile);
+    }
+
+    @Transactional
+    public MyProfileResponse updateMe(String email, UpdateMyProfileRequest request) {
+        User user = findUserByEmail(email);
+        user.updateProfile(request.getName(), request.getPhone());
+
+        if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
+            if (request.getCurrentPassword() == null
+                    || !passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
+            }
+            user.changePassword(passwordEncoder.encode(request.getNewPassword()));
+        }
+
+        EngineerProfile profile = user.getRole() == Role.ENGINEER
+                ? engineerProfileRepository.findByUserId(user.getId()).orElse(null)
+                : null;
+        return new MyProfileResponse(user, profile);
+    }
 
     @Transactional(readOnly = true)
     public List<UserResponse> getPendingUsers(String email) {

@@ -9,7 +9,8 @@ export type Screen =
     | "store-home" | "store-as-form" | "store-dispatch" | "store-receipt"
     | "eng-queue" | "eng-detail" | "eng-status" | "eng-report"
     | "admin-dashboard" | "admin-equipment" | "admin-billing" | "admin-users"
-    | "super-dashboard" | "super-brands" | "super-users";
+    | "super-dashboard" | "super-brands" | "super-users"
+    | "settings";
 
 interface SidebarProps {
     role: UserRole;
@@ -155,7 +156,7 @@ export function Sidebar({ role, screen, onScreenChange, onRoleChange, notificati
             </span>
                     )}
                 </button>
-                <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full transition-all" style={{ color: "#64748B" }}>
+                <button onClick={() => onScreenChange("settings")} className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full transition-all" style={{ color: "#64748B", cursor: "pointer" }}>
                     <Settings size={18} />
                     <span style={{ fontSize: 15 }}>설정</span>
                 </button>
@@ -173,7 +174,7 @@ export function Sidebar({ role, screen, onScreenChange, onRoleChange, notificati
                         <div style={{ fontSize: 11, color: "#475569" }}>{roleLabels[role]}</div>
                     </div>
                     <button
-                        onClick={onLogout}
+                        onClick={e => { e.stopPropagation(); onLogout(); }}
                         className="p-1.5 rounded-md transition-all"
                         style={{ color: "#475569" }}
                         onMouseEnter={e => (e.currentTarget.style.color = "#F87171", e.currentTarget.style.background = "rgba(248,113,113,0.1)")}

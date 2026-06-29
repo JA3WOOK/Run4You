@@ -1,6 +1,8 @@
 package com.run4you.user.controller;
 
 import com.run4you.common.response.ApiResponse;
+import com.run4you.user.dto.MyProfileResponse;
+import com.run4you.user.dto.UpdateMyProfileRequest;
 import com.run4you.user.dto.UserResponse;
 import com.run4you.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,18 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<MyProfileResponse>> getMe(@AuthenticationPrincipal String email) {
+        return ResponseEntity.ok(ApiResponse.success(userService.getMe(email)));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse<MyProfileResponse>> updateMe(
+            @AuthenticationPrincipal String email,
+            @RequestBody UpdateMyProfileRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(userService.updateMe(email, request)));
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('SUPER_ADMIN')")

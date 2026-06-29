@@ -21,6 +21,7 @@ import { EngReport } from "./components/engineer/EngReport";
 import { AdminBilling } from "./components/admin/AdminBilling";
 import { AdminStats } from "./components/admin/AdminStats";
 import { SuperDashboard } from "./components/super/SuperDashboard";
+import { SettingsPage } from "./pages/SettingsPage";
 
 const screenLabels: Record<string, string> = {
   "store-home": "기자재 현황",
@@ -38,6 +39,7 @@ const screenLabels: Record<string, string> = {
   "super-dashboard": "전체 통계 대시보드",
   "super-brands": "브랜드 관리",
   "super-users": "회원 관리",
+  "settings": "설정",
 };
 
 const defaultScreen: Record<UserRole, Screen> = {
@@ -136,6 +138,9 @@ function Dashboard() {
             {screen === "admin-dashboard" && <AdminStats />}
             {screen === "admin-billing" && <AdminBilling />}
             {screen === "admin-users" && <BrandAdminUsersPage />}
+
+            {/* ── 공통 ── */}
+            {screen === "settings" && <SettingsPage />}
 
             {/* ── 플랫폼 총괄 ── */}
             {screen === "super-dashboard" && <SuperDashboard />}

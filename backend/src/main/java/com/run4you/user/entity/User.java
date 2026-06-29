@@ -37,6 +37,15 @@ public class User {
     @Column(name = "brand_id")
     private Long brandId;
 
+    public void updateProfile(String name, String phone) {
+        if (name != null && !name.isBlank()) this.name = name;
+        if (phone != null) this.phone = phone;
+    }
+
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
     public void approve() {
         this.status = UserStatus.ACTIVE;
     }
