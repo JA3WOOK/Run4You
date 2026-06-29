@@ -17,6 +17,9 @@ import { EngQueue } from "./components/engineer/EngQueue";
 import { EngDetail } from "./components/engineer/EngDetail";
 import { EngStatus } from "./pages/engineer/EngStatus";
 import BrandAdminUsersPage from "./pages/BrandAdminUsersPage";
+import { EngReport } from "./components/engineer/EngReport";
+import { AdminBilling } from "./components/admin/AdminBilling";
+import { AdminStats } from "./components/admin/AdminStats";
 
 const screenLabels: Record<string, string> = {
   "store-home": "기자재 현황",
@@ -108,8 +111,19 @@ function Dashboard() {
                     onComplete={() => setScreen("eng-queue")}
                 />
             )}
+            {screen === "eng-report" && (
+                <EngReport
+                    assignmentId={acceptedAssignmentId ?? Date.now()}
+                    asRequestId={selectedAsRequestId ?? 1}
+                    engineerId={4}
+                    equipmentId={1}
+                    onSubmit={() => setScreen("eng-queue")}
+                />
+            )}
 
             {/* ── 본사 관리자 ── */}
+            {screen === "admin-dashboard" && <AdminStats />}
+            {screen === "admin-billing" && <AdminBilling />}
             {screen === "admin-users" && <BrandAdminUsersPage />}
 
             {/* ── 플랫폼 총괄 ── */}
