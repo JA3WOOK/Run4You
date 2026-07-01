@@ -49,10 +49,7 @@ export function AdminStats() {
     .filter((m) => m.mtbfDays != null)
     .map((m) => ({ name: `기자재 #${m.equipmentId}`, value: m.mtbfDays as number }));
   const engData = data.engineerStats.map((e) => ({ name: `#${e.engineerId}`, value: e.repairCount }));
-  const topFailData = [...data.mtbf]
-    .sort((a, b) => b.failureCount - a.failureCount)
-    .slice(0, 5)
-    .map((m) => ({ name: `기자재 #${m.equipmentId}`, value: m.failureCount }));
+  const topFailData = data.topFailingEquipment.map((m) => ({ name: `기자재 #${m.equipmentId}`, value: m.failureCount }));
 
   return (
     <div className="flex flex-col gap-6">
