@@ -1,5 +1,6 @@
 package com.run4you.user.service;
 
+import com.run4you.brand.repository.BrandRepository;
 import com.run4you.matching.entity.EngineerProfile;
 import com.run4you.matching.repository.EngineerProfileRepository;
 import com.run4you.user.dto.MyProfileResponse;
@@ -21,6 +22,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final EngineerProfileRepository engineerProfileRepository;
+    private final BrandRepository brandRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
@@ -29,7 +31,7 @@ public class UserService {
         EngineerProfile profile = user.getRole() == Role.ENGINEER
                 ? engineerProfileRepository.findByUserId(user.getId()).orElse(null)
                 : null;
-        return new MyProfileResponse(user, profile);
+        return new MyProfileResponse(user, profile, resolveBrandName(user.getBrandId()));
     }
 
     @Transactional
@@ -48,7 +50,7 @@ public class UserService {
         EngineerProfile profile = user.getRole() == Role.ENGINEER
                 ? engineerProfileRepository.findByUserId(user.getId()).orElse(null)
                 : null;
-        return new MyProfileResponse(user, profile);
+        return new MyProfileResponse(user, profile, resolveBrandName(user.getBrandId()));
     }
 
     @Transactional(readOnly = true)
@@ -57,19 +59,19 @@ public class UserService {
 
         if (requester.getRole() == Role.SUPER_ADMIN) {
             return userRepository.findAllByStatus(UserStatus.PENDING).stream()
-                    .map(UserResponse::new)
+                    .map(u -> new UserResponse(u, resolveBrandName(u.getBrandId())))
                     .toList();
         }
 
         return userRepository.findAllByStatusAndBrandId(UserStatus.PENDING, requester.getBrandId()).stream()
-                .map(UserResponse::new)
+                .map(u -> new UserResponse(u, resolveBrandName(u.getBrandId())))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<UserResponse> getAll() {
         return userRepository.findAll().stream()
-                .map(UserResponse::new)
+                .map(u -> new UserResponse(u, resolveBrandName(u.getBrandId())))
                 .toList();
     }
 
@@ -84,7 +86,7 @@ public class UserService {
             throw new IllegalStateException("승인 대기 중인 사용자가 아닙니다.");
         }
         target.approve();
-        return new UserResponse(target);
+        return new UserResponse(target, resolveBrandName(target.getBrandId()));
     }
 
     @Transactional
@@ -97,7 +99,7 @@ public class UserService {
         if (target.getStatus() != UserStatus.PENDING) {
             throw new IllegalStateException("승인 대기 중인 사용자가 아닙니다.");
         }
-        UserResponse response = new UserResponse(target);
+        UserResponse response = new UserResponse(target, resolveBrandName(target.getBrandId()));
         userRepository.delete(target);
         return response;
     }
@@ -109,7 +111,7 @@ public class UserService {
             throw new IllegalStateException("플랫폼 총괄 계정은 비활성화할 수 없습니다.");
         }
         target.deactivate();
-        return new UserResponse(target);
+        return new UserResponse(target, resolveBrandName(target.getBrandId()));
     }
 
     @Transactional
@@ -119,7 +121,7 @@ public class UserService {
             throw new IllegalStateException("비활성화된 계정이 아닙니다.");
         }
         target.activate();
-        return new UserResponse(target);
+        return new UserResponse(target, resolveBrandName(target.getBrandId()));
     }
 
     @Transactional
@@ -129,6 +131,11 @@ public class UserService {
             throw new IllegalStateException("플랫폼 총괄 계정은 삭제할 수 없습니다.");
         }
         userRepository.delete(target);
+    }
+
+    private String resolveBrandName(Long brandId) {
+        if (brandId == null) return null;
+        return brandRepository.findById(brandId).map(b -> b.getName()).orElse(null);
     }
 
     private void validateAuthority(User requester, User target) {

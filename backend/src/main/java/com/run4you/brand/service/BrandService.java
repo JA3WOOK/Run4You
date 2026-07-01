@@ -29,6 +29,13 @@ public class BrandService {
     }
 
     @Transactional(readOnly = true)
+    public List<BrandResponse> getActive() {
+        return brandRepository.findAllByStatus(BrandStatus.ACTIVE).stream()
+                .map(BrandResponse::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public BrandResponse getById(Long id) {
         return new BrandResponse(findBrand(id));
     }

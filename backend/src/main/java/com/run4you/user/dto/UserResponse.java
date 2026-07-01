@@ -15,8 +15,9 @@ public class UserResponse {
     private final Role role;
     private final UserStatus status;
     private final Long brandId;
+    private final String brandName;
 
-    public UserResponse(User user) {
+    public UserResponse(User user, String brandName) {
         this.id = user.getId();
         this.email = user.getEmail();
         this.name = user.getName();
@@ -24,5 +25,6 @@ public class UserResponse {
         this.role = user.getRole();
         this.status = user.getStatus();
         this.brandId = user.getBrandId();
+        this.brandName = brandName;
     }
 }

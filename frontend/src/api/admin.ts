@@ -20,6 +20,7 @@ export interface User {
   role: string;
   status: 'PENDING' | 'ACTIVE' | 'INACTIVE';
   brandId: number | null;
+  brandName: string | null;
 }
 
 export async function getBrands(token: string): Promise<Brand[]> {

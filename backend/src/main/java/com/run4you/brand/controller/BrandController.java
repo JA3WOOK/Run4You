@@ -25,6 +25,11 @@ public class BrandController {
         return ResponseEntity.ok(ApiResponse.success(brandService.getAll()));
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<ApiResponse<List<BrandResponse>>> getActive() {
+        return ResponseEntity.ok(ApiResponse.success(brandService.getActive()));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRAND_ADMIN')")
     public ResponseEntity<ApiResponse<BrandResponse>> getById(@PathVariable Long id) {

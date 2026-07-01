@@ -93,8 +93,8 @@ export default function SuperAdminUsersPage() {
                   </span>
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--muted-foreground)' }}>{user.email}</div>
-                {user.brandId && (
-                  <div style={{ fontSize: 12, color: 'var(--muted-foreground)', marginTop: 2 }}>브랜드 ID: {user.brandId}</div>
+                {user.brandName && (
+                  <div style={{ fontSize: 12, color: 'var(--muted-foreground)', marginTop: 2 }}>{user.brandName}</div>
                 )}
               </div>
 
