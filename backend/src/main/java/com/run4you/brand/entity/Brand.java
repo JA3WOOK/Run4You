@@ -33,10 +33,6 @@ public class Brand {
         this.status = BrandStatus.ACTIVE;
     }
 
-    public void reject() {
-        this.status = BrandStatus.INACTIVE;
-    }
-
     public void updateCommissionRate(BigDecimal commissionRate) {
         this.commissionRate = commissionRate;
     }

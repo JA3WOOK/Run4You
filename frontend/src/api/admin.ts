@@ -20,6 +20,7 @@ export interface User {
   role: string;
   status: 'PENDING' | 'ACTIVE' | 'INACTIVE';
   brandId: number | null;
+  brandName: string | null;
 }
 
 export async function getBrands(token: string): Promise<Brand[]> {
@@ -40,6 +41,10 @@ export async function rejectBrand(token: string, id: number): Promise<Brand> {
 export async function updateCommissionRate(token: string, id: number, commissionRate: number): Promise<Brand> {
   const res = await api.patch(`/brands/${id}/commission-rate`, { commissionRate }, { headers: authHeader(token) });
   return res.data.data;
+}
+
+export async function deleteBrand(token: string, id: number): Promise<void> {
+  await api.delete(`/brands/${id}`, { headers: authHeader(token) });
 }
 
 export async function getUsers(token: string): Promise<User[]> {
@@ -70,4 +75,8 @@ export async function deactivateUser(token: string, id: number): Promise<User> {
 export async function activateUser(token: string, id: number): Promise<User> {
   const res = await api.patch(`/users/${id}/activate`, {}, { headers: authHeader(token) });
   return res.data.data;
+}
+
+export async function deleteUser(token: string, id: number): Promise<void> {
+  await api.delete(`/users/${id}`, { headers: authHeader(token) });
 }

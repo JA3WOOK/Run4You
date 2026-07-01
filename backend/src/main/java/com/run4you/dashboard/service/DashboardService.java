@@ -49,7 +49,8 @@ public class DashboardService {
                 defectsByCategory(reports, parts),
                 mtbfByEquipment(reports),
                 overallMtbf(reports),
-                engineerStats(reports)
+                engineerStats(reports),
+                topFailingEquipment(reports)
         );
     }
 
@@ -149,6 +150,14 @@ public class DashboardService {
         return counts.entrySet().stream()
                 .map(e -> new EngineerStat(e.getKey(), e.getValue()))
                 .sorted(Comparator.comparingLong(EngineerStat::repairCount).reversed())
+                .toList();
+    }
+
+    private List<EquipmentFailure> topFailingEquipment(List<RepairReport> reports) {
+        return mtbfByEquipment(reports).stream()
+                .sorted(Comparator.comparingInt(EquipmentMtbf::failureCount).reversed())
+                .limit(5)
+                .map(m -> new EquipmentFailure(m.equipmentId(), m.failureCount()))
                 .toList();
     }
 

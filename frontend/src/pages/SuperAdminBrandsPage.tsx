@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getBrands, approveBrand, rejectBrand, updateCommissionRate, type Brand } from '../api/admin';
+import { getBrands, approveBrand, rejectBrand, updateCommissionRate, deleteBrand, type Brand } from '../api/admin';
 
 const statusLabel: Record<string, string> = {
   PENDING: '승인 대기',
@@ -34,8 +34,15 @@ export default function SuperAdminBrandsPage() {
 
   async function handleReject(id: number) {
     if (!accessToken) return;
-    const updated = await rejectBrand(accessToken, id);
-    setBrands(prev => prev.map(b => b.id === id ? updated : b));
+    await rejectBrand(accessToken, id);
+    setBrands(prev => prev.filter(b => b.id !== id));
+  }
+
+  async function handleDelete(id: number) {
+    if (!accessToken) return;
+    if (!confirm('정말 삭제하시겠습니까? 연결된 관리자 계정도 함께 삭제됩니다.')) return;
+    await deleteBrand(accessToken, id);
+    setBrands(prev => prev.filter(b => b.id !== id));
   }
 
   async function handleUpdateRate(id: number) {
@@ -110,21 +117,30 @@ export default function SuperAdminBrandsPage() {
                 )}
               </div>
 
-              {/* 승인/거절 버튼 */}
-              {brand.status === 'PENDING' && (
-                <div className="flex gap-2">
-                  <button onClick={() => handleApprove(brand.id)}
-                    className="px-4 py-1.5 rounded-lg"
-                    style={{ background: '#16A34A', color: '#fff', fontSize: 13, fontWeight: 600 }}>
-                    승인
-                  </button>
-                  <button onClick={() => handleReject(brand.id)}
+              {/* 승인/거절/삭제 버튼 */}
+              <div className="flex gap-2">
+                {brand.status === 'PENDING' && (
+                  <>
+                    <button onClick={() => handleApprove(brand.id)}
+                      className="px-4 py-1.5 rounded-lg"
+                      style={{ background: '#16A34A', color: '#fff', fontSize: 13, fontWeight: 600 }}>
+                      승인
+                    </button>
+                    <button onClick={() => handleReject(brand.id)}
+                      className="px-4 py-1.5 rounded-lg"
+                      style={{ background: '#DC2626', color: '#fff', fontSize: 13, fontWeight: 600 }}>
+                      거절
+                    </button>
+                  </>
+                )}
+                {(brand.status === 'ACTIVE' || brand.status === 'INACTIVE') && (
+                  <button onClick={() => handleDelete(brand.id)}
                     className="px-4 py-1.5 rounded-lg"
                     style={{ background: '#DC2626', color: '#fff', fontSize: 13, fontWeight: 600 }}>
-                    거절
+                    삭제
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ))}
         </div>

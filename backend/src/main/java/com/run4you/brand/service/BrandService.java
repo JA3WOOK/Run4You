@@ -29,6 +29,13 @@ public class BrandService {
     }
 
     @Transactional(readOnly = true)
+    public List<BrandResponse> getActive() {
+        return brandRepository.findAllByStatus(BrandStatus.ACTIVE).stream()
+                .map(BrandResponse::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public BrandResponse getById(Long id) {
         return new BrandResponse(findBrand(id));
     }
@@ -53,12 +60,12 @@ public class BrandService {
         if (brand.getStatus() != BrandStatus.PENDING) {
             throw new IllegalStateException("승인 대기 중인 브랜드가 아닙니다.");
         }
-        brand.reject();
-
         userRepository.findByBrandIdAndRole(id, Role.BRAND_ADMIN)
-                .ifPresent(User::reject);
+                .ifPresent(userRepository::delete);
 
-        return new BrandResponse(brand);
+        BrandResponse response = new BrandResponse(brand);
+        brandRepository.delete(brand);
+        return response;
     }
 
     @Transactional
@@ -66,6 +73,14 @@ public class BrandService {
         Brand brand = findBrand(id);
         brand.updateCommissionRate(request.getCommissionRate());
         return new BrandResponse(brand);
+    }
+
+    @Transactional
+    public void deleteBrand(Long id) {
+        Brand brand = findBrand(id);
+        userRepository.findByBrandIdAndRole(id, Role.BRAND_ADMIN)
+                .ifPresent(userRepository::delete);
+        brandRepository.delete(brand);
     }
 
     private Brand findBrand(Long id) {

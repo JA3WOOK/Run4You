@@ -72,4 +72,11 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> activate(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(userService.activate(id)));
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

@@ -57,6 +57,7 @@ export interface MyProfile {
   role: string;
   status: string;
   brandId: number | null;
+  brandName: string | null;
   specialties: string[];
   rating: number | null;
   skillGrade: string | null;
@@ -64,6 +65,16 @@ export interface MyProfile {
 
 export async function getMyProfile(token: string): Promise<MyProfile> {
   const res = await api.get('/users/me', { headers: authHeader(token) });
+  return res.data.data;
+}
+
+export interface ActiveBrand {
+  id: number;
+  name: string;
+}
+
+export async function getActiveBrands(): Promise<ActiveBrand[]> {
+  const res = await api.get('/brands/active');
   return res.data.data;
 }
 

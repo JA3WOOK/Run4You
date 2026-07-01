@@ -25,8 +25,8 @@ export default function BrandAdminUsersPage() {
 
   async function handleReject(id: number) {
     if (!accessToken) return;
-    const updated = await rejectUser(accessToken, id);
-    setUsers(prev => prev.map(u => u.id === id ? updated : u));
+    await rejectUser(accessToken, id);
+    setUsers(prev => prev.filter(u => u.id !== id));
   }
 
   if (loading) return <div style={{ color: 'var(--muted-foreground)', padding: 32 }}>불러오는 중...</div>;

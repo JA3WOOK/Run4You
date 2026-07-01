@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUsers, approveUser, rejectUser, deactivateUser, activateUser, type User } from '../api/admin';
+import { getUsers, approveUser, rejectUser, deactivateUser, activateUser, deleteUser, type User } from '../api/admin';
 
 const roleLabel: Record<string, string> = {
   SUPER_ADMIN: '플랫폼 총괄',
@@ -39,8 +39,8 @@ export default function SuperAdminUsersPage() {
 
   async function handleReject(id: number) {
     if (!accessToken) return;
-    const updated = await rejectUser(accessToken, id);
-    setUsers(prev => prev.map(u => u.id === id ? updated : u));
+    await rejectUser(accessToken, id);
+    setUsers(prev => prev.filter(u => u.id !== id));
   }
 
   async function handleDeactivate(id: number) {
@@ -53,6 +53,13 @@ export default function SuperAdminUsersPage() {
     if (!accessToken) return;
     const updated = await activateUser(accessToken, id);
     setUsers(prev => prev.map(u => u.id === id ? updated : u));
+  }
+
+  async function handleDelete(id: number) {
+    if (!accessToken) return;
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    await deleteUser(accessToken, id);
+    setUsers(prev => prev.filter(u => u.id !== id));
   }
 
   if (loading) return <div style={{ color: 'var(--muted-foreground)', padding: 32 }}>불러오는 중...</div>;
@@ -86,8 +93,8 @@ export default function SuperAdminUsersPage() {
                   </span>
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--muted-foreground)' }}>{user.email}</div>
-                {user.brandId && (
-                  <div style={{ fontSize: 12, color: 'var(--muted-foreground)', marginTop: 2 }}>브랜드 ID: {user.brandId}</div>
+                {user.brandName && (
+                  <div style={{ fontSize: 12, color: 'var(--muted-foreground)', marginTop: 2 }}>{user.brandName}</div>
                 )}
               </div>
 
@@ -114,11 +121,18 @@ export default function SuperAdminUsersPage() {
                   </button>
                 )}
                 {user.status === 'INACTIVE' && (
-                  <button onClick={() => handleActivate(user.id)}
-                    className="px-4 py-1.5 rounded-lg"
-                    style={{ background: '#2563EB', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                    활성화
-                  </button>
+                  <>
+                    <button onClick={() => handleActivate(user.id)}
+                      className="px-4 py-1.5 rounded-lg"
+                      style={{ background: '#2563EB', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                      활성화
+                    </button>
+                    <button onClick={() => handleDelete(user.id)}
+                      className="px-4 py-1.5 rounded-lg"
+                      style={{ background: '#DC2626', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                      삭제
+                    </button>
+                  </>
                 )}
               </div>
             </div>

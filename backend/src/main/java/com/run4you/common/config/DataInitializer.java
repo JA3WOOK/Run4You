@@ -1,16 +1,26 @@
 package com.run4you.common.config;
 
+import com.run4you.asrequest.entity.AsRequest;
+import com.run4you.asrequest.entity.AsStatus;
+import com.run4you.asrequest.entity.Priority;
+import com.run4you.asrequest.repository.AsRequestRepository;
 import com.run4you.brand.entity.Brand;
 import com.run4you.brand.entity.BrandStatus;
 import com.run4you.brand.repository.BrandRepository;
+import com.run4you.common.enums.AssignMethod;
 import com.run4you.common.enums.AvailabilityStatus;
+import com.run4you.common.enums.DispatchStatus;
 import com.run4you.equipment.entity.Equipment;
 import com.run4you.equipment.entity.EquipmentCategory;
 import com.run4you.equipment.entity.EquipmentStatus;
 import com.run4you.equipment.repository.EquipmentRepository;
+import com.run4you.matching.entity.Assignment;
 import com.run4you.matching.entity.EngineerProfile;
 import com.run4you.matching.entity.EngineerSpecialty;
+import com.run4you.matching.repository.AssignmentRepository;
 import com.run4you.matching.repository.EngineerProfileRepository;
+import com.run4you.report.entity.RepairReport;
+import com.run4you.report.repository.RepairReportRepository;
 import com.run4you.store.entity.Store;
 import com.run4you.store.repository.StoreRepository;
 import com.run4you.user.entity.Role;
@@ -21,12 +31,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Profile("dev")
 @Component
@@ -38,6 +52,10 @@ public class DataInitializer implements ApplicationRunner {
     private final StoreRepository storeRepository;
     private final EquipmentRepository equipmentRepository;
     private final EngineerProfileRepository engineerProfileRepository;
+    private final AsRequestRepository asRequestRepository;
+    private final AssignmentRepository assignmentRepository;
+    private final RepairReportRepository repairReportRepository;
+    private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -287,6 +305,122 @@ public class DataInitializer implements ApplicationRunner {
             }
         });
 
+        // 완료된 수리 이력 더미 (AsRequest → Assignment → RepairReport → Settlement 전체 체인)
+        try {
+            Integer settlementCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM settlements", Integer.class);
+            if (settlementCount == null || settlementCount == 0) {
+                addRepairDummies(brand1.getId(), brand2.getId(),
+                        store1, store2, owner1, owner2, engineer1, engineer2);
+            }
+        } catch (Exception e) {
+            System.err.println("[DataInitializer] 수리 이력 더미 삽입 실패: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void addRepairDummies(Long brand1Id, Long brand2Id,
+                                   Store store1, Store store2,
+                                   User owner1, User owner2,
+                                   User engineer1, User engineer2) {
+        List<Equipment> s1 = equipmentRepository.findActiveByStoreId(store1.getId());
+        List<Equipment> s2 = equipmentRepository.findActiveByStoreId(store2.getId());
+        if (s1.isEmpty() || s2.isEmpty()) return;
+
+        Equipment kiosk1   = byCategory(s1, EquipmentCategory.KIOSK);
+        Equipment espresso1 = byCategory(s1, EquipmentCategory.ESPRESSO);
+        Equipment kiosk2   = byCategory(s2, EquipmentCategory.KIOSK);
+        Equipment fridge2  = byCategory(s2, EquipmentCategory.REFRIGERATOR);
+
+        // month, store, equipment, owner, engineer, brandId, priority, faultCategory, symptom,
+        // requestedAt, completedAt, labor, parts, emergency, billed, vat, invoiceNo
+        createRepair(store1, kiosk1,   owner1, engineer1, brand1Id, Priority.NORMAL,   "화면손상",    "터치 불량",
+                ldt(2026,2,8),  ldt(2026,2,10), 50000, 120000, 0,      170000, 17000, "AS-2026-001");
+        createRepair(store2, kiosk2,   owner2, engineer2, brand2Id, Priority.NORMAL,   "전원불량",    "화면 꺼짐",
+                ldt(2026,2,18), ldt(2026,2,20), 60000, 150000, 0,      210000, 21000, "AS-2026-002");
+        createRepair(store1, espresso1,owner1, engineer1, brand1Id, Priority.EMERGENCY,"누수발생",    "누수 발생",
+                ldt(2026,3,6),  ldt(2026,3,8),  80000, 200000, 84000,  364000, 36400, "AS-2026-003");
+        createRepair(store2, kiosk2,   owner2, engineer2, brand2Id, Priority.NORMAL,   "네트워크오류","결제 오류",
+                ldt(2026,3,20), ldt(2026,3,22), 90000, 200000, 0,      290000, 29000, "AS-2026-004");
+        createRepair(store1, kiosk1,   owner1, engineer2, brand1Id, Priority.NORMAL,   "소음발생",    "버튼 불량",
+                ldt(2026,4,3),  ldt(2026,4,5),  40000,  80000, 0,      120000, 12000, "AS-2026-005");
+        createRepair(store2, fridge2,  owner2, engineer1, brand2Id, Priority.EMERGENCY,"냉각불량",    "냉각 불량",
+                ldt(2026,4,16), ldt(2026,4,18), 100000,300000,120000,  520000, 52000, "AS-2026-006");
+        createRepair(store1, espresso1,owner1, engineer1, brand1Id, Priority.NORMAL,   "소음발생",    "압력 이상",
+                ldt(2026,5,10), ldt(2026,5,12), 70000, 250000, 0,      320000, 32000, "AS-2026-007");
+        createRepair(store2, kiosk2,   owner2, engineer2, brand2Id, Priority.NORMAL,   "화면손상",    "프린터 불량",
+                ldt(2026,5,23), ldt(2026,5,25), 75000, 160000, 0,      235000, 23500, "AS-2026-008");
+        createRepair(store1, kiosk1,   owner1, engineer1, brand1Id, Priority.EMERGENCY,"전원불량",    "전원 불량",
+                ldt(2026,6,6),  ldt(2026,6,8),  60000, 180000, 72000,  312000, 31200, "AS-2026-009");
+        createRepair(store2, fridge2,  owner2, engineer2, brand2Id, Priority.NORMAL,   "냉각불량",    "온도 오류",
+                ldt(2026,6,18), ldt(2026,6,20), 85000, 220000, 0,      305000, 30500, "AS-2026-010");
+        createRepair(store1, espresso1,owner1, engineer2, brand1Id, Priority.NORMAL,   "누수발생",    "스팀 불량",
+                ldt(2026,6,30), ldt(2026,7,1),  55000, 160000, 0,      215000, 21500, "AS-2026-011");
+    }
+
+    private void createRepair(Store store, Equipment equipment, User owner, User engineer,
+                               Long brandId, Priority priority, String faultCategory, String symptom,
+                               LocalDateTime requestedAt, LocalDateTime completedAt,
+                               int labor, int parts, int emergency, int billed, int vat,
+                               String invoiceNo) {
+        // 1. A/S 접수 (완료 상태)
+        AsRequest asRequest = asRequestRepository.save(AsRequest.builder()
+                .store(store)
+                .equipment(equipment)
+                .requester(owner)
+                .symptom(symptom)
+                .faultCategory(faultCategory)
+                .priority(priority)
+                .status(AsStatus.COMPLETED)
+                .requestedAt(requestedAt)
+                .build());
+
+        // 2. 배정 (완료 상태, 과거 시각 포함)
+        Assignment assignment = assignmentRepository.save(Assignment.builder()
+                .asRequest(asRequest)
+                .engineer(engineer)
+                .totalScore(new BigDecimal("78.50"))
+                .assignMethod(AssignMethod.MANUAL_ACCEPT)
+                .status(DispatchStatus.COMPLETED)
+                .assignedAt(requestedAt.plusHours(1))
+                .acceptedAt(requestedAt.plusHours(1))
+                .completedAt(completedAt)
+                .build());
+
+        // 3. 정비 리포트
+        RepairReport report = repairReportRepository.save(RepairReport.builder()
+                .assignmentId(assignment.getId())
+                .asRequestId(asRequest.getId())
+                .engineerId(engineer.getId())
+                .equipmentId(equipment.getId())
+                .laborCost(new BigDecimal(labor))
+                .diagnosis("점검 완료. 부품 교체 후 정상 작동 확인.")
+                .build());
+
+        // 4. Settlement — created_at을 완료 시각으로 지정해야 하므로 JDBC로 직접 삽입
+        // payout_amount = billed_amount (더미 데이터용 근사값)
+        String dt = completedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        jdbcTemplate.update(
+                "INSERT INTO settlements (report_id, brand_id, engineer_id, invoice_number, " +
+                "labor_cost, parts_cost, emergency_fee, commission_amount, billed_amount, vat_amount, " +
+                "payout_amount, verification_status, approval_status, created_at, updated_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'VERIFIED', 'APPROVED', ?, ?)",
+                report.getId(), brandId, engineer.getId(), invoiceNo,
+                new BigDecimal(labor), new BigDecimal(parts),
+                new BigDecimal(emergency), new BigDecimal(emergency),
+                new BigDecimal(billed), new BigDecimal(vat),
+                new BigDecimal(billed),
+                dt, dt);
+    }
+
+    private Equipment byCategory(List<Equipment> list, EquipmentCategory cat) {
+        return list.stream()
+                .filter(e -> e.getCategory() == cat)
+                .findFirst()
+                .orElse(list.get(0));
+    }
+
+    private LocalDateTime ldt(int year, int month, int day) {
+        return LocalDateTime.of(year, month, day, 10, 0);
     }
 
 }

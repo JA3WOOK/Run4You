@@ -25,6 +25,11 @@ public class BrandController {
         return ResponseEntity.ok(ApiResponse.success(brandService.getAll()));
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<ApiResponse<List<BrandResponse>>> getActive() {
+        return ResponseEntity.ok(ApiResponse.success(brandService.getActive()));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRAND_ADMIN')")
     public ResponseEntity<ApiResponse<BrandResponse>> getById(@PathVariable Long id) {
@@ -41,6 +46,13 @@ public class BrandController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<BrandResponse>> reject(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(brandService.reject(id)));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        brandService.deleteBrand(id);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @PatchMapping("/{id}/commission-rate")

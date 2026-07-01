@@ -20,11 +20,12 @@ public class MyProfileResponse {
     private final Role role;
     private final UserStatus status;
     private final Long brandId;
+    private final String brandName;
     private final List<String> specialties;
     private final BigDecimal rating;
     private final String skillGrade;
 
-    public MyProfileResponse(User user, EngineerProfile profile) {
+    public MyProfileResponse(User user, EngineerProfile profile, String brandName) {
         this.id = user.getId();
         this.email = user.getEmail();
         this.name = user.getName();
@@ -32,6 +33,7 @@ public class MyProfileResponse {
         this.role = user.getRole();
         this.status = user.getStatus();
         this.brandId = user.getBrandId();
+        this.brandName = brandName;
         if (profile != null) {
             this.specialties = profile.getSpecialties().stream()
                     .map(EngineerSpecialty::getCategory)

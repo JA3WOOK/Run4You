@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -44,14 +45,24 @@ public class SuperDashboardService {
         List<User> pendingUsers = userRepository.findAllByStatus(UserStatus.PENDING);
         int pendingApprovals = pendingBrands.size() + pendingUsers.size();
 
-        // 이번 달 청구액
         List<Settlement> settlements = settlementRepository.findAll();
         YearMonth thisMonth = YearMonth.now();
+
+        // 브랜드별 수수료율 맵 (brandId → commissionRate)
+        List<Brand> allBrands = brandRepository.findAll();
+        Map<Long, BigDecimal> commissionRateByBrand = allBrands.stream()
+                .collect(Collectors.toMap(Brand::getId, Brand::getCommissionRate));
+
+        // 이번 달 플랫폼 수수료 수익 = billedAmount × (commissionRate / 100)
         BigDecimal thisMonthCommission = settlements.stream()
                 .filter(s -> s.getCreatedAt() != null
-                        && YearMonth.from(s.getCreatedAt()).equals(thisMonth))
-                .map(Settlement::getBilledAmount)
-                .filter(Objects::nonNull)
+                        && YearMonth.from(s.getCreatedAt()).equals(thisMonth)
+                        && s.getBilledAmount() != null
+                        && s.getBrandId() != null)
+                .map(s -> {
+                    BigDecimal rate = commissionRateByBrand.getOrDefault(s.getBrandId(), BigDecimal.ZERO);
+                    return s.getBilledAmount().multiply(rate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // 브랜드별 A/S 건수 (실제 접수 기준)
@@ -75,7 +86,7 @@ public class SuperDashboardService {
                         })
                 ));
 
-        List<BrandStat> brandStats = brandRepository.findAll().stream()
+        List<BrandStat> brandStats = allBrands.stream()
                 .map(b -> {
                     List<Settlement> bs = settlementsByBrand.getOrDefault(b.getId(), List.of());
                     BigDecimal total = bs.stream().map(Settlement::getBilledAmount)
@@ -94,15 +105,20 @@ public class SuperDashboardService {
                 .sorted(Comparator.comparingLong(CategoryStat::count).reversed())
                 .toList();
 
-        // 월별 수수료 (최근 6개월)
+        // 월별 플랫폼 수수료 수익 (최근 6개월) = billedAmount × (commissionRate / 100)
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM");
         List<MonthlyCommission> monthlyCommission = new ArrayList<>();
         for (int i = 5; i >= 0; i--) {
             YearMonth ym = thisMonth.minusMonths(i);
             BigDecimal amount = settlements.stream()
-                    .filter(s -> s.getCreatedAt() != null && YearMonth.from(s.getCreatedAt()).equals(ym))
-                    .map(Settlement::getBilledAmount)
-                    .filter(Objects::nonNull)
+                    .filter(s -> s.getCreatedAt() != null
+                            && YearMonth.from(s.getCreatedAt()).equals(ym)
+                            && s.getBilledAmount() != null
+                            && s.getBrandId() != null)
+                    .map(s -> {
+                        BigDecimal rate = commissionRateByBrand.getOrDefault(s.getBrandId(), BigDecimal.ZERO);
+                        return s.getBilledAmount().multiply(rate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                    })
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             monthlyCommission.add(new MonthlyCommission(ym.format(fmt), amount));
         }

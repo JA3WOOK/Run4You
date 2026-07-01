@@ -50,10 +50,6 @@ public class User {
         this.status = UserStatus.ACTIVE;
     }
 
-    public void reject() {
-        this.status = UserStatus.INACTIVE;
-    }
-
     public void deactivate() {
         this.status = UserStatus.INACTIVE;
     }
