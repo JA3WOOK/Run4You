@@ -36,8 +36,7 @@ export function StoreHome({
                           }: {
     onRequestAS: () => void;
     onGoReceipts: () => void;
-    onTrack?: (assignmentId: number | null) => void;
-    onViewAll?: () => void;
+    onTrack?: (assignmentId: number | null, engineer?: { name: string | null; phone: string | null }) => void;    onViewAll?: () => void;
 }) {
     const { accessToken, user } = useAuth();
     const [data, setData] = useState<EquipmentListResponse | null>(null);
@@ -240,7 +239,11 @@ export function StoreHome({
                     rows={inProgress}
                     loading={ipLoading}
                     error={ipError}
-                    onTrack={onTrack}
+                    onTrack={(assignmentId) => {
+                        const row = inProgress.find((r) => r.assignmentId === assignmentId);
+                        onTrack?.(assignmentId, { name: row?.engineerName ?? null, phone: row?.engineerPhone ?? null });
+                    }}
+
                     onViewAll={onViewAll}
                     onViewRequest={(equipmentId, equipmentName) => setAsDetail({ equipmentId, equipmentName })}
                 />
