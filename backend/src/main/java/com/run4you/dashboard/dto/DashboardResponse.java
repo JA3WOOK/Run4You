@@ -14,7 +14,8 @@ public record DashboardResponse(
         List<CategoryDefect> defectsByCategory,
         List<EquipmentMtbf> mtbf,
         Double overallMtbfDays,
-        List<EngineerStat> engineerStats
+        List<EngineerStat> engineerStats,
+        List<EquipmentFailure> topFailingEquipment
 ) {
     /** 정산 요약 (검토대기/승인/위변조 금액·건수) */
     public record SettlementSummary(
@@ -52,5 +53,8 @@ public record DashboardResponse(
 
     /** 엔지니어별 수리 건수 */
     public record EngineerStat(Long engineerId, long repairCount) {
+    }
+
+    public record EquipmentFailure(Long equipmentId, int failureCount) {
     }
 }

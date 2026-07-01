@@ -155,10 +155,10 @@ export function SettingsPage() {
                   <span style={{ fontSize: 14, color: 'var(--foreground)' }}>{profile.phone}</span>
                 </div>
               )}
-              {profile.brandId && (
+              {profile.brandName && (
                 <div className="flex items-center gap-3">
                   <User size={15} style={{ color: 'var(--muted-foreground)', flexShrink: 0 }} />
-                  <span style={{ fontSize: 14, color: 'var(--foreground)' }}>브랜드 ID: {profile.brandId}</span>
+                  <span style={{ fontSize: 14, color: 'var(--foreground)' }}>{profile.brandName}</span>
                 </div>
               )}
             </div>

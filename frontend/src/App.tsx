@@ -25,6 +25,8 @@ import { SuperDashboard } from "./components/super/SuperDashboard";
 import { SettingsPage } from "./pages/SettingsPage";
 import { subscribeDispatch } from "./api/dispatch";
 import { getMyNotifications } from "./api/notification";
+import SuperAdminLmsPage from "./pages/SuperAdminLmsPage";
+
 
 const screenLabels: Record<string, string> = {
   "store-home": "기자재 현황",
@@ -42,6 +44,7 @@ const screenLabels: Record<string, string> = {
   "super-dashboard": "전체 통계 대시보드",
   "super-brands": "브랜드 관리",
   "super-users": "회원 관리",
+  "super-lms": "교육 콘텐츠 관리",
   "settings": "설정",
 };
 
@@ -110,7 +113,9 @@ function Dashboard() {
             onLogout={signOut}
         />
         <main className="flex-1 overflow-y-auto">
+
           <Header screenLabel={screenLabels[screen] ?? screen} sseConnected={sseConnected} />
+
           <div className="px-8 py-6">
 
             {/* ── 점주 ── */}
@@ -209,6 +214,7 @@ function Dashboard() {
             {screen === "super-dashboard" && <SuperDashboard />}
             {screen === "super-brands" && <SuperAdminBrandsPage />}
             {screen === "super-users" && <SuperAdminUsersPage />}
+            {screen === "super-lms" && <SuperAdminLmsPage />}
 
           </div>
         </main>

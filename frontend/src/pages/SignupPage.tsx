@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Zap } from 'lucide-react';
-import { signup, signupBrand } from '../api/auth';
+import { signup, signupBrand, getActiveBrands, type ActiveBrand } from '../api/auth';
 
 type Tab = 'brand' | 'member';
 
@@ -11,6 +11,11 @@ export default function SignupPage() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeBrands, setActiveBrands] = useState<ActiveBrand[]>([]);
+
+  useEffect(() => {
+    getActiveBrands().then(setActiveBrands).catch(() => {});
+  }, []);
 
   // 브랜드 가입 폼
   const [brandForm, setBrandForm] = useState({
@@ -229,10 +234,14 @@ export default function SignupPage() {
                   </select>
                 </div>
                 <div className="flex-1 flex flex-col gap-1.5">
-                  <label style={{ fontSize: 14 }}>브랜드 ID</label>
-                  <input type="number" className="w-full px-4 py-2.5 rounded-lg outline-none" style={inputStyle}
-                    value={memberForm.brandId} onChange={e => setMemberForm(p => ({ ...p, brandId: e.target.value }))}
-                    placeholder="1" required />
+                  <label style={{ fontSize: 14 }}>브랜드</label>
+                  <select className="w-full px-4 py-2.5 rounded-lg outline-none" style={inputStyle}
+                    value={memberForm.brandId} onChange={e => setMemberForm(p => ({ ...p, brandId: e.target.value }))} required>
+                    <option value="">브랜드 선택</option>
+                    {activeBrands.map(b => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               {memberForm.role === 'ENGINEER' && (

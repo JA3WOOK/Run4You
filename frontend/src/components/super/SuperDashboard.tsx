@@ -131,6 +131,7 @@ export function SuperDashboard() {
                 <XAxis type="number" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false} width={90} />
                 <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v: number) => [`${v}건`, 'A/S']} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <Bar dataKey="totalAsCount" fill="#7C3AED" radius={[0, 4, 4, 0]} barSize={14} name="총 접수" />
                 <Bar dataKey="completedAsCount" fill="#16A34A" radius={[0, 4, 4, 0]} barSize={14} name="완료" />
               </BarChart>
