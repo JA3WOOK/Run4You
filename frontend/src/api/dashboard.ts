@@ -34,6 +34,9 @@ export interface EquipmentMtbf {
 export interface EngineerStat {
   engineerId: number; repairCount: number;
 }
+export interface EquipmentFailure {
+  equipmentId: number; failureCount: number;
+}
 export interface DashboardResponse {
   settlement: SettlementSummary;
   repair: RepairSummary;
@@ -42,6 +45,7 @@ export interface DashboardResponse {
   mtbf: EquipmentMtbf[];
   overallMtbfDays: number | null;
   engineerStats: EngineerStat[];
+  topFailingEquipment: EquipmentFailure[];
 }
 
 export async function getDashboard(token: string): Promise<DashboardResponse> {
