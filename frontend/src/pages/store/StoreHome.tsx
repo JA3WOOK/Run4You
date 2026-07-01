@@ -372,7 +372,12 @@ export function StoreHome({
                 <RepairHistoryModal equipmentId={historyTarget.id} category={historyTarget.category} onClose={() => setHistoryTarget(null)} />
             )}
             {asDetail && (
-                <AsRequestDetailModal equipmentId={asDetail.equipmentId} equipmentName={asDetail.equipmentName} onClose={() => setAsDetail(null)} />
+                <AsRequestDetailModal
+                    equipmentId={asDetail.equipmentId}
+                    equipmentName={asDetail.equipmentName}
+                    onClose={() => setAsDetail(null)}
+                    onCancelled={() => setReload((r) => r + 1)}
+                />
             )}
         </div>
     );

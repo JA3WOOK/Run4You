@@ -72,4 +72,15 @@ public class AsRequestController {
         return ResponseEntity.ok(
                 ApiResponse.success(asRequestService.getInProgressAsList()));
     }
+
+    // A/S 접수 취소 (배정 전 상태에서만 가능)
+    @PatchMapping("/{asRequestId}/cancel")
+    public ResponseEntity<ApiResponse<String>> cancelAsRequest(
+            @PathVariable Long asRequestId) {
+
+        asRequestService.cancelAsRequest(asRequestId);
+
+        return ResponseEntity.ok(
+                ApiResponse.of("접수가 취소되었습니다.", "success"));
+    }
 }
