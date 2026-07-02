@@ -26,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -100,6 +102,7 @@ public class AsRequestService {
                 .priority(createDto.getPriority())
                 .errorCode(createDto.getErrorCode())
                 .symptom(createDto.getSymptom())
+                .faultCategory(equipment.getCategory().name())
                 .requestedAt(LocalDateTime.now())
                 .build();
 
@@ -108,8 +111,19 @@ public class AsRequestService {
         // 기자재 현황 화면 - 상태 변경 (OPERATIONAL -> FAULTY)
         equipment.updateStatus(EquipmentStatus.FAULTY);
 
-        // AI 분석 비동기 실행 (접수 응답을 기다리게 하지 않음)
-        aiDiagnosisService.analyzeAndSave(saved.getId(), saved.getSymptom(), equipment.getCategory().name());
+        // AI 분석 비동기 실행 — 트랜잭션 커밋 이후에 실행되도록 등록
+        Long savedId = saved.getId();
+        String symptom = saved.getSymptom();
+        String category = equipment.getCategory().name();
+
+        String errorCodeInput = saved.getErrorCode();
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                aiDiagnosisService.analyzeAndSave(savedId, symptom, category, errorCodeInput);
+            }
+        });
 
         return AsRequestResponseDto.builder()
                 .id(saved.getId())

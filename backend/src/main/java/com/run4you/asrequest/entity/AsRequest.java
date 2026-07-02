@@ -106,7 +106,9 @@ public class AsRequest { // 긴급 A/S 접수 마스터 테이블
 
     /** AI 분석 결과 반영 — 에러코드 정형화, 예상 원인, 추천 부품 저장 */
     public void applyAiDiagnosis(String errorCode, String causeDescription, String recommendedParts) {
-        this.errorCode = errorCode;
+        if (this.errorCode == null || this.errorCode.isBlank()) {
+            this.errorCode = errorCode;
+        }
         this.aiCauseDescription = causeDescription;
         this.aiRecommendedParts = recommendedParts;
     }

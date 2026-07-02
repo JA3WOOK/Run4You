@@ -3,6 +3,7 @@ package com.run4you.asrequest.repository;
 import com.run4you.asrequest.entity.ErrorCode;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ErrorCodeRepository extends JpaRepository<ErrorCode, Long> {
@@ -12,4 +13,7 @@ public interface ErrorCodeRepository extends JpaRepository<ErrorCode, Long> {
 
     // 에러코드 존재 여부만 빠르게 확인 <- 신규 저장 여부 판단 용
     boolean existsByCode(String code);
+
+    // 같은 카테고리의 기존 에러코드 목록 조회
+    List<ErrorCode> findByCategory(String category);
 }
