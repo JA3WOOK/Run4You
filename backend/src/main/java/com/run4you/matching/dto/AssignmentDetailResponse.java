@@ -25,6 +25,8 @@ public class AssignmentDetailResponse {
     private String priority;
     private String symptom;
     private String errorCode;
+    private String aiCauseDescription;
+    private String aiRecommendedParts;
 
     // ─── 기자재 정보 ─────────────────────────────────────────────
     private String equipmentName;
@@ -68,6 +70,8 @@ public class AssignmentDetailResponse {
                 .priority(req.getPriority().name())
                 .symptom(req.getSymptom())
                 .errorCode(req.getErrorCode())
+                .aiCauseDescription(req.getAiCauseDescription())
+                .aiRecommendedParts(req.getAiRecommendedParts())
                 // 기자재
                 .equipmentName(equipment.getName())
                 .serialNumber(equipment.getSerialNo())

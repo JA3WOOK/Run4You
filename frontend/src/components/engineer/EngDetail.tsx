@@ -1,4 +1,4 @@
-import { MapPin, Clock, Zap, Coffee, AlertCircle, Navigation, ArrowLeft } from "lucide-react";
+import { MapPin, Clock, Zap, Coffee, AlertCircle, Navigation, ArrowLeft, CheckCircle, Sparkles, Check } from "lucide-react";
 import { useAssignmentDetail } from "../../hooks/useAssignmentDetail";
 
 const SCORE_COLORS = ["#2563EB", "#16A34A", "#7C3AED", "#D97706", "#DC2626"];
@@ -106,6 +106,71 @@ export function EngDetail({ asRequestId, onBack, onAccepted }: Props) {
               </div>
             )}
           </div>
+
+          {/* AI 고장 원인 사전 분석 */}
+          {(d.aiCauseDescription || d.errorCode || d.aiRecommendedParts) && (
+              <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(15,23,42,0.08)" }}>
+                {/* 헤더 영역 — 살짝 어두운 배경 */}
+                <div className="flex items-baseline gap-2 flex-wrap p-4" style={{ background: "#F8F9FB" }}>
+                  <Sparkles size={15} style={{ color: "#0F172A" }} />
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>AI 진단 리포트</span>
+                  <span className="px-2 py-0.5 rounded-full" style={{ background: "#E2E4EA", color: "#475569", fontSize: 10, fontWeight: 700 }}>
+                    BETA
+                  </span>
+                  <span style={{ fontSize: 12, color: "#64748B" }}>
+                    입력된 증상을 분석해 예상 원인과 부품을 추천합니다
+                  </span>
+                </div>
+
+                {/* 본문 영역 — 흰색 배경 */}
+                <div className="grid grid-cols-3 p-5" style={{ background: "#fff" }}>
+                  {/* 01 예상 원인 */}
+                  <div className="pr-5" style={{ borderRight: "1px solid rgba(15,23,42,0.08)" }}>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8" }}>01</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A" }}>예상 원인</span>
+                    </div>
+                    <div style={{ fontSize: 13, color: "#334155", lineHeight: 1.7 }}>
+                      {d.aiCauseDescription ?? "-"}
+                    </div>
+                  </div>
+
+                  {/* 02 추천 에러 코드 */}
+                  <div className="px-5" style={{ borderRight: "1px solid rgba(15,23,42,0.08)" }}>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8" }}>02</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A" }}>추천 에러 코드</span>
+                    </div>
+                    {d.errorCode ? (
+                        <span style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", fontFamily: "monospace", letterSpacing: "0.02em" }}>
+                          {d.errorCode}
+                        </span>
+                    ) : (
+                        <span style={{ fontSize: 13, color: "#94A3B8" }}>-</span>
+                    )}
+                  </div>
+
+                  {/* 03 추천 지참 부품 */}
+                  <div className="pl-5">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8" }}>03</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A" }}>추천 지참 부품</span>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {d.aiRecommendedParts
+                          ? d.aiRecommendedParts.split(",").map((part, i) => (
+                              <div key={i} className="flex items-center gap-1.5">
+                                <span style={{ fontSize: 12, color: "#334155" }}>✓</span>
+                                <span style={{ fontSize: 13, color: "#0F172A" }}>{part.trim()}</span>
+                              </div>
+                          ))
+                          : <span style={{ fontSize: 13, color: "#94A3B8" }}>-</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+          )}
         </div>
 
         {/* 우측: 점수 + 출동 정보 */}

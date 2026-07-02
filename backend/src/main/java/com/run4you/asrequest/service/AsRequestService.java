@@ -26,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -48,6 +50,7 @@ public class AsRequestService {
     private final EngineerProfileRepository engineerProfileRepository;
     private final RepairReportPartsRepository repairReportPartsRepository;
     private final DispatchStatusHistoryRepository dispatchStatusHistoryRepository;
+    private final AiDiagnosisService aiDiagnosisService;
 
     // 현재 로그인한 유저 조회
     private User getCurrentUser() {
@@ -99,6 +102,7 @@ public class AsRequestService {
                 .priority(createDto.getPriority())
                 .errorCode(createDto.getErrorCode())
                 .symptom(createDto.getSymptom())
+                .faultCategory(equipment.getCategory().name())
                 .requestedAt(LocalDateTime.now())
                 .build();
 
@@ -106,6 +110,20 @@ public class AsRequestService {
 
         // 기자재 현황 화면 - 상태 변경 (OPERATIONAL -> FAULTY)
         equipment.updateStatus(EquipmentStatus.FAULTY);
+
+        // AI 분석 비동기 실행 — 트랜잭션 커밋 이후에 실행되도록 등록
+        Long savedId = saved.getId();
+        String symptom = saved.getSymptom();
+        String category = equipment.getCategory().name();
+
+        String errorCodeInput = saved.getErrorCode();
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                aiDiagnosisService.analyzeAndSave(savedId, symptom, category, errorCodeInput);
+            }
+        });
 
         return AsRequestResponseDto.builder()
                 .id(saved.getId())
@@ -345,6 +363,24 @@ public class AsRequestService {
                 .requests(items)
                 .totalCount(items.size())
                 .build();
+    }
+
+    // A/S 접수 취소 (배정 전 상태에서만 가능)
+    public void cancelAsRequest(Long asRequestId) {
+
+        User requester = getCurrentUser();
+
+        AsRequest asRequest = asRequestRepository.findById(asRequestId)
+                .orElseThrow(() -> new IllegalArgumentException("접수를 찾을 수 없습니다."));
+
+        if (!asRequest.getRequester().getId().equals(requester.getId())) {
+            throw new IllegalStateException("이 접수를 취소할 권한이 없습니다.");
+        }
+
+        asRequest.cancel(); // RECEIVED 아니면 IllegalStateException
+
+        Equipment equipment = asRequest.getEquipment();
+        equipment.updateStatus(EquipmentStatus.OPERATIONAL);
     }
 
     // 접수번호 포맷 (전용 채번 필드 없으므로 연도-ID 조합)

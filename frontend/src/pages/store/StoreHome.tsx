@@ -1,7 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import {
-    Monitor, Coffee, Snowflake, Refrigerator, AlertCircle, Plus, Search,
-    FileWarning, ClipboardList, ReceiptText, RotateCcw, ChevronDown,
+    Monitor,
+    Coffee,
+    Snowflake,
+    Refrigerator,
+    AlertCircle,
+    Plus,
+    Search,
+    FileWarning,
+    ClipboardList,
+    ReceiptText,
+    RotateCcw,
+    ChevronDown,
 } from "lucide-react";
 import { StatusBadge } from "../../components/common/StatusBadge";
 import { useAuth } from "../../context/AuthContext";
@@ -15,6 +25,8 @@ import { AsRequestDetailModal } from "./AsRequestDetailModal";
 import { InProgressAsTable } from "./InProgressAsTable";
 import { getReceipts } from "../../api/receipt";
 
+// 카테고리 아이콘 / 라벨
+
 const catIcons: Record<string, React.ReactNode> = {
     KIOSK: <Monitor size={18} />,
     ESPRESSO: <Coffee size={18} />,
@@ -23,21 +35,26 @@ const catIcons: Record<string, React.ReactNode> = {
 };
 
 const catLabels: Record<string, string> = {
-    ALL: "전체", KIOSK: "키오스크", ESPRESSO: "에스프레소", ICE_MAKER: "제빙기", REFRIGERATOR: "냉장고",
+    ALL: "전체",
+    KIOSK: "키오스크",
+    ESPRESSO: "에스프레소",
+    ICE_MAKER: "제빙기",
+    REFRIGERATOR: "냉장고",
 };
 
 type Category = "ALL" | "KIOSK" | "ESPRESSO" | "ICE_MAKER" | "REFRIGERATOR";
 type StatusFilter = "ALL" | "OPERATIONAL" | "FAULTY" | "REPAIRING";
 
-const VISIBLE_LIMIT = 5;
+const VISIBLE_LIMIT = 4;
 
-export function StoreHome({
-                              onRequestAS, onGoReceipts, onTrack, onViewAll,
-                          }: {
+interface StoreHomeProps {
     onRequestAS: () => void;
     onGoReceipts: () => void;
-    onTrack?: (assignmentId: number | null, engineer?: { name: string | null; phone: string | null }) => void;    onViewAll?: () => void;
-}) {
+    onTrack?: (assignmentId: number | null, engineer?: { name: string | null; phone: string | null }) => void;
+    onViewAll?: () => void;
+}
+
+export function StoreHome({ onRequestAS, onGoReceipts, onTrack, onViewAll }: StoreHomeProps) {
     const { accessToken, user } = useAuth();
     const [data, setData] = useState<EquipmentListResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -66,8 +83,14 @@ export function StoreHome({
         if (!accessToken) return;
         setLoading(true);
         getEquipmentList(accessToken)
-            .then((res) => { setData(res); setError(""); })
-            .catch((err) => { console.error(err); setError("기자재 목록을 불러오지 못했습니다."); })
+            .then((res) => {
+                setData(res);
+                setError("");
+            })
+            .catch((err) => {
+                console.error(err);
+                setError("기자재 목록을 불러오지 못했습니다.");
+            })
             .finally(() => setLoading(false));
     }, [accessToken, reload]);
 
@@ -76,8 +99,14 @@ export function StoreHome({
         if (!accessToken) return;
         setIpLoading(true);
         getInProgressAsList(accessToken)
-            .then((res) => { setInProgress(res.requests); setIpError(""); })
-            .catch((err) => { console.error(err); setIpError("진행 중인 A/S를 불러오지 못했습니다."); })
+            .then((res) => {
+                setInProgress(res.requests);
+                setIpError("");
+            })
+            .catch((err) => {
+                console.error(err);
+                setIpError("진행 중인 A/S를 불러오지 못했습니다.");
+            })
             .finally(() => setIpLoading(false));
     }, [accessToken, reload]);
 
@@ -119,7 +148,12 @@ export function StoreHome({
         inProgressRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     };
 
-    const resetFilters = () => { setStatusFilter("ALL"); setCat("ALL"); setSearch(""); setShowAll(false); };
+    const resetFilters = () => {
+        setStatusFilter("ALL");
+        setCat("ALL");
+        setSearch("");
+        setShowAll(false);
+    };
 
     // 상단 3카드
     const summaryCards = [
@@ -129,7 +163,7 @@ export function StoreHome({
             sub: "고장 상태로 확인이 필요한 기자재",
             value: data?.faultyCount ?? 0,
             icon: <FileWarning size={20} />,
-            color: "#EF4444",
+            color: "#DC2626",
             cta: "고장 장비 보기",
             onClick: () => applyFilter("FAULTY"),
         },
@@ -156,10 +190,13 @@ export function StoreHome({
     ];
 
     return (
-        <div className="flex flex-col gap-6" style={{ maxWidth: 1600, margin: "0 auto", width: "100%" }}>
+        <div className="flex flex-col gap-5" style={{ maxWidth: 1300, margin: "0 auto", width: "100%" }}>
             {/* 인사 + 액션 */}
             <div className="flex items-start justify-between">
                 <div>
+                    <p style={{ color: "#94A3B8", fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
+                        {data?.storeName}
+                    </p>
                     <h1 style={{ color: "#0F172A", letterSpacing: "-0.02em" }}>
                         안녕하세요, {user?.name ?? "점주"} 점주님!
                     </h1>
@@ -167,13 +204,32 @@ export function StoreHome({
                         매장 A/S 현황을 한눈에 확인하세요.
                     </p>
                 </div>
+
                 <div className="flex items-center gap-2">
-                    <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all hover:opacity-90"
-                            style={{ background: "#2563EB", color: "#fff", fontSize: 15, fontWeight: 600, boxShadow: "0 1px 2px rgba(37,99,235,0.3)" }}>
+                    <button
+                        onClick={() => setShowForm(true)}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all hover:opacity-90"
+                        style={{
+                            background: "#2563EB",
+                            color: "#fff",
+                            fontSize: 15,
+                            fontWeight: 600,
+                            boxShadow: "0 1px 2px rgba(37,99,235,0.3)",
+                        }}
+                    >
                         <Plus size={15} /> 기자재 등록
                     </button>
-                    <button onClick={onRequestAS} className="flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all hover:opacity-90"
-                            style={{ background: "#DC2626", color: "#fff", fontSize: 15, fontWeight: 600, boxShadow: "0 1px 2px rgba(220,38,38,0.3)" }}>
+                    <button
+                        onClick={onRequestAS}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all hover:opacity-90"
+                        style={{
+                            background: "#DC2626",
+                            color: "#fff",
+                            fontSize: 15,
+                            fontWeight: 600,
+                            boxShadow: "0 1px 2px rgba(220,38,38,0.3)",
+                        }}
+                    >
                         <Plus size={15} /> 긴급 A/S 접수
                     </button>
                 </div>
@@ -185,7 +241,7 @@ export function StoreHome({
                     <button
                         key={c.key}
                         onClick={c.onClick}
-                        className="rounded-2xl p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
+                        className="rounded-2xl px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
                         style={{
                             background: "#fff",
                             border: "1px solid #E2E8F0",
@@ -193,41 +249,40 @@ export function StoreHome({
                         }}
                     >
                         {/* 제목 + 아이콘 */}
-                        <div className="flex items-start justify-between">
-                            <span style={{ fontSize: 15, fontWeight: 700, color: "#0F172A" }}>
-                                {c.title}
-                            </span>
-                            <div
-                                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                                style={{ background: `${c.color}1A`, color: c.color }}
-                            >
-                                {c.icon}
+                        <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                                    style={{ background: `${c.color}15`, color: c.color }}
+                                >
+                                    {c.icon}
+                                </div>
+
+                                <div>
+                                    <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>
+                                        {c.title}
+                                    </div>
+                                    <p style={{ fontSize: 12, color: "#94A3B8", marginTop: 2 }}>
+                                        {c.sub}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* 숫자 */}
-                        <div className="mt-5">
-                            <span style={{ fontSize: 36, fontWeight: 800, color: "#0F172A", letterSpacing: "-0.04em" }}>
-                                {c.value == null ? "—" : c.value}
-                            </span>
-                            <span style={{ fontSize: 15, fontWeight: 600, color: "#64748B", marginLeft: 4 }}>
-                                건
-                            </span>
-                        </div>
-
-                        {/* 설명 */}
-                        <p style={{ fontSize: 13, color: "#64748B", marginTop: 6 }}>
-                            {c.sub}
-                        </p>
-
-                        {/* 하단 CTA */}
-                        <div
-                            className="mt-5 pt-4 flex items-center justify-end"
-                            style={{ borderTop: "1px solid #F1F5F9" }}
-                        >
-                            <span style={{ fontSize: 13, fontWeight: 700, color: c.color }}>
-                                {c.cta} →
-                            </span>
+                            <div className="flex items-baseline gap-1.5">
+                                <span
+                                    style={{
+                                        fontSize: 28,
+                                        fontWeight: 800,
+                                        color: c.color,
+                                        letterSpacing: "-0.03em",
+                                    }}
+                                >
+                                    {c.value ?? "-"}
+                                </span>
+                                <span style={{ fontSize: 13, color: "#64748B", fontWeight: 600 }}>
+                                    건
+                                </span>
+                            </div>
                         </div>
                     </button>
                 ))}
@@ -250,38 +305,62 @@ export function StoreHome({
             </div>
 
             {/* 등록 기자재 */}
-            <div ref={gridRef} className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
+            <div ref={gridRef} className="flex flex-col">
+                <div className="flex items-center justify-between mb-2">
                     <div>
                         <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0F172A" }}>등록 기자재</h2>
-                        <p style={{ color: "#64748B", fontSize: 13, marginTop: 2 }}>총 {data?.totalCount ?? 0}대 등록</p>
+                        <p style={{ color: "#64748B", fontSize: 13, marginTop: 2 }}>
+                            총 {data?.totalCount ?? 0}대 등록
+                        </p>
                     </div>
-                    <button onClick={resetFilters} className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all hover:bg-slate-100"
-                            style={{ fontSize: 13, color: "#475569", fontWeight: 600, border: "1px solid rgba(15,23,42,0.12)" }}>
+                    <button
+                        onClick={resetFilters}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all hover:bg-slate-100"
+                        style={{ fontSize: 13, color: "#475569", fontWeight: 600, border: "1px solid rgba(15,23,42,0.12)" }}
+                    >
                         <RotateCcw size={14} /> 필터 초기화
                     </button>
                 </div>
 
                 {/* 카테고리 + 검색 */}
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 p-1.5 rounded-xl" style={{ background: "#F1F5F9" }}>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: "#F1F5F9" }}>
                         {(["ALL", "KIOSK", "ESPRESSO", "ICE_MAKER", "REFRIGERATOR"] as Category[]).map((c) => (
-                            <button key={c} onClick={() => { setCat(c); setShowAll(false); }} className="flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all"
-                                    style={{
-                                        background: cat === c ? "#fff" : "transparent",
-                                        color: cat === c ? "#0F172A" : "#64748B",
-                                        fontSize: 15, fontWeight: cat === c ? 700 : 500,
-                                        boxShadow: cat === c ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                                    }}>
+                            <button
+                                key={c}
+                                onClick={() => {
+                                    setCat(c);
+                                    setShowAll(false);
+                                }}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all"
+                                style={{
+                                    background: cat === c ? "#fff" : "transparent",
+                                    color: cat === c ? "#0F172A" : "#64748B",
+                                    fontSize: 14,
+                                    fontWeight: cat === c ? 700 : 500,
+                                    boxShadow: cat === c ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                                }}
+                            >
                                 {c !== "ALL" && catIcons[c]}
                                 {catLabels[c]}
                             </button>
                         ))}
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-3 rounded-lg flex-1" style={{ background: "#fff", border: "1px solid rgba(15,23,42,0.08)" }}>
+
+                    <div
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg flex-1"
+                        style={{ background: "#fff", border: "1px solid rgba(15,23,42,0.08)" }}
+                    >
                         <Search size={16} style={{ color: "#94A3B8" }} />
-                        <input value={search} onChange={(e) => { setSearch(e.target.value); setShowAll(false); }} placeholder="기기명, 모델, 시리얼 검색..."
-                               style={{ border: "none", outline: "none", background: "transparent", fontSize: 14, color: "#0F172A", flex: 1 }} />
+                        <input
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setShowAll(false);
+                            }}
+                            placeholder="기기명, 모델, 시리얼 검색..."
+                            style={{ border: "none", outline: "none", background: "transparent", fontSize: 14, color: "#0F172A", flex: 1 }}
+                        />
                     </div>
                 </div>
 
@@ -294,21 +373,37 @@ export function StoreHome({
 
                 {/* 그리드 */}
                 {!loading && !error && (
-                    <div className="grid grid-cols-5 gap-4">
+                    <div className="grid grid-cols-4 gap-4">
                         {visibleEquipments.map((eq) => (
-                            <div key={eq.id} className="rounded-xl p-5 flex flex-col gap-4 transition-all hover:shadow-md"
-                                 style={{
-                                     background: "#fff",
-                                     border: `1px solid ${eq.status === "FAULTY" ? "#FCA5A5" : eq.status === "REPAIRING" ? "#FCD34D" : "rgba(15,23,42,0.08)"}`,
-                                     boxShadow: "0 1px 3px rgba(0,0,0,0.04)", cursor: "pointer", minHeight: 320,
-                                 }}>
+                            <div
+                                key={eq.id}
+                                className="rounded-xl p-5 flex flex-col gap-4 transition-all hover:shadow-md"
+                                style={{
+                                    background: "#fff",
+                                    border: `1px solid ${
+                                        eq.status === "FAULTY"
+                                            ? "#FCA5A5"
+                                            : eq.status === "REPAIRING"
+                                                ? "#FCD34D"
+                                                : "rgba(15,23,42,0.08)"
+                                    }`,
+                                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                                    cursor: "pointer",
+                                    minHeight: 320,
+                                }}
+                            >
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-11 h-11 rounded-lg flex items-center justify-center" style={{ background: "#F1F5F9" }}>
+                                        <div
+                                            className="w-11 h-11 rounded-lg flex items-center justify-center"
+                                            style={{ background: "#F1F5F9" }}
+                                        >
                                             <span style={{ color: "#475569" }}>{catIcons[eq.category]}</span>
                                         </div>
                                         <div>
-                                            <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>{eq.name}</div>
+                                            <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
+                                                {eq.name}
+                                            </div>
                                             <div style={{ fontSize: 13, color: "#64748B" }}>{eq.modelName}</div>
                                         </div>
                                     </div>
@@ -318,35 +413,49 @@ export function StoreHome({
                                 {eq.errorCode && eq.status !== "OPERATIONAL" && (
                                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "#FEF2F2" }}>
                                         <AlertCircle size={14} style={{ color: "#DC2626" }} />
-                                        <span style={{ fontSize: 14, color: "#DC2626", fontWeight: 600 }}>에러코드: {eq.errorCode}</span>
+                                        <span style={{ fontSize: 14, color: "#DC2626", fontWeight: 600 }}>
+                                            에러코드: {eq.errorCode}
+                                        </span>
                                     </div>
                                 )}
 
                                 <div className="flex flex-col gap-2">
                                     <div className="flex justify-between">
                                         <span style={{ fontSize: 14, color: "#94A3B8" }}>시리얼 번호</span>
-                                        <span style={{ fontSize: 14, color: "#334155", fontFamily: "var(--font-mono)", fontWeight: 500 }}>{eq.serialNo}</span>
+                                        <span style={{ fontSize: 14, color: "#334155", fontFamily: "var(--font-mono)", fontWeight: 500 }}>
+                                            {eq.serialNo}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span style={{ fontSize: 14, color: "#94A3B8" }}>구매일</span>
-                                        <span style={{ fontSize: 14, color: "#334155", fontWeight: 500 }}>{eq.purchasedAt ?? "-"}</span>
+                                        <span style={{ fontSize: 14, color: "#334155", fontWeight: 500 }}>
+                                            {eq.purchasedAt ?? "-"}
+                                        </span>
                                     </div>
                                     {eq.nextInspectionDate && (
                                         <div className="flex justify-between">
                                             <span style={{ fontSize: 14, color: "#94A3B8" }}>다음 점검</span>
-                                            <span style={{ fontSize: 14, color: "#16A34A", fontWeight: 600 }}>{eq.nextInspectionDate}</span>
+                                            <span style={{ fontSize: 14, color: "#16A34A", fontWeight: 600 }}>
+                                                {eq.nextInspectionDate}
+                                            </span>
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="flex gap-2 mt-auto pt-3" style={{ borderTop: "1px solid rgba(15,23,42,0.06)" }}>
-                                    <button onClick={() => setHistoryTarget(eq)} className="flex-1 py-2 rounded-lg text-center transition-all hover:bg-slate-100"
-                                            style={{ fontSize: 13, color: "#475569", fontWeight: 600 }}>
+                                    <button
+                                        onClick={() => setHistoryTarget(eq)}
+                                        className="flex-1 py-2 rounded-lg text-center transition-all hover:bg-slate-100"
+                                        style={{ fontSize: 13, color: "#475569", fontWeight: 600 }}
+                                    >
                                         이력 보기
                                     </button>
                                     {eq.status !== "OPERATIONAL" && (
-                                        <button onClick={() => setAsDetail({ equipmentId: eq.id, equipmentName: eq.name })} className="flex-1 py-2 rounded-lg text-center transition-all"
-                                                style={{ fontSize: 14, fontWeight: 600, background: "#FEF2F2", color: "#DC2626" }}>
+                                        <button
+                                            onClick={() => setAsDetail({ equipmentId: eq.id, equipmentName: eq.name })}
+                                            className="flex-1 py-2 rounded-lg text-center transition-all"
+                                            style={{ fontSize: 14, fontWeight: 600, background: "#FEF2F2", color: "#DC2626" }}
+                                        >
                                             접수 내용
                                         </button>
                                     )}
@@ -359,11 +468,16 @@ export function StoreHome({
                 {/* 더보기 / 접기 */}
                 {!loading && !error && filtered.length > VISIBLE_LIMIT && (
                     <div className="flex justify-center pt-2">
-                        <button onClick={() => setShowAll((v) => !v)}
-                                className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg transition-all hover:bg-slate-100"
-                                style={{ fontSize: 14, color: "#2563EB", fontWeight: 600, border: "1px solid rgba(37,99,235,0.2)" }}>
+                        <button
+                            onClick={() => setShowAll((v) => !v)}
+                            className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg transition-all hover:bg-slate-100"
+                            style={{ fontSize: 14, color: "#2563EB", fontWeight: 600, border: "1px solid rgba(37,99,235,0.2)" }}
+                        >
                             {showAll ? "접기" : `더보기 (${filtered.length - VISIBLE_LIMIT}대 더)`}
-                            <ChevronDown size={16} style={{ transform: showAll ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+                            <ChevronDown
+                                size={16}
+                                style={{ transform: showAll ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
+                            />
                         </button>
                     </div>
                 )}
@@ -372,10 +486,19 @@ export function StoreHome({
             {/* 모달 */}
             {showForm && <EquipmentForm onClose={() => setShowForm(false)} onSuccess={() => setReload((r) => r + 1)} />}
             {historyTarget && (
-                <RepairHistoryModal equipmentId={historyTarget.id} category={historyTarget.category} onClose={() => setHistoryTarget(null)} />
+                <RepairHistoryModal
+                    equipmentId={historyTarget.id}
+                    category={historyTarget.category}
+                    onClose={() => setHistoryTarget(null)}
+                />
             )}
             {asDetail && (
-                <AsRequestDetailModal equipmentId={asDetail.equipmentId} equipmentName={asDetail.equipmentName} onClose={() => setAsDetail(null)} />
+                <AsRequestDetailModal
+                    equipmentId={asDetail.equipmentId}
+                    equipmentName={asDetail.equipmentName}
+                    onClose={() => setAsDetail(null)}
+                    onCancelled={() => setReload((r) => r + 1)}
+                />
             )}
         </div>
     );

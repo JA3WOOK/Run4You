@@ -128,4 +128,9 @@ public interface AsRequestRepository extends JpaRepository<AsRequest, Long> {
     // 고장 카테고리별 건수 (SUPER_ADMIN 대시보드)
     @Query("SELECT a.faultCategory, COUNT(a) FROM AsRequest a WHERE a.faultCategory IS NOT NULL GROUP BY a.faultCategory")
     List<Object[]> countGroupByFaultCategory();
+
+    // 완전히 동일한 증상+카테고리로 이미 AI 분석이 끝난 접수가 있는지 확인 (캐싱용)
+    Optional<AsRequest> findFirstBySymptomAndFaultCategoryAndErrorCodeIsNotNullOrderByRequestedAtDesc(
+            String symptom, String faultCategory);
 }
+
