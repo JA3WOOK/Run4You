@@ -1,7 +1,7 @@
 import {
     LayoutDashboard, Wrench, MapPin, FileText, ClipboardList,
     Settings, Bell, ChevronRight, LogOut, Zap, BarChart3,
-    CreditCard, Package, Building2, Users
+    CreditCard, Package, Building2, Users, BookOpen
 } from "lucide-react";
 
 export type UserRole = "STORE_OWNER" | "ENGINEER" | "BRAND_ADMIN" | "SUPER_ADMIN";
@@ -9,7 +9,7 @@ export type Screen =
     | "store-home" | "store-as-form" | "store-dispatch" | "store-receipt"
     | "eng-queue" | "eng-detail" | "eng-status" | "eng-report"
     | "admin-dashboard" | "admin-equipment" | "admin-billing" | "admin-users"
-    | "super-dashboard" | "super-brands" | "super-users"
+    | "super-dashboard" | "super-brands" | "super-users" | "super-lms"
     | "settings";
 
 interface SidebarProps {
@@ -54,6 +54,7 @@ const navItems: Record<UserRole, { label: string; screen: Screen; icon: React.Re
         { label: "기자재 관리", screen: "admin-equipment", icon: <Package size={19} /> },
         { label: "정산 관리", screen: "admin-billing", icon: <CreditCard size={19} /> },
         { label: "회원 승인 관리", screen: "admin-users", icon: <Users size={19} /> },
+        { label: "교육 콘텐츠 관리", screen: "super-lms", icon: <BookOpen size={19} /> },
     ],
     SUPER_ADMIN: [
         { label: "전체 통계 대시보드", screen: "super-dashboard", icon: <BarChart3 size={19} /> },

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
+import type { NotificationItem } from './notification';
 
 const api = axios.create({ baseURL: 'http://localhost:8080/api' });
 
@@ -104,11 +105,33 @@ export async function getTracking(
     return res.data;
 }
 
+// 배정 엔지니어 표시 정보 (AssignmentEngineerResponse)
+export interface AssignmentEngineer {
+    engineerId: number;
+    name: string | null;
+    phone: string | null;
+    rating: number | null;       // 0.00~5.00
+    ratingCount: number | null;
+    skillGrade: string | null;   // BEGINNER / INTERMEDIATE / ADVANCED
+}
+
+// 4. 배정 엔지니어 정보 (점주 추적 카드 평점/등급) — GET /assignments/{id}/engineer
+export async function getAssignmentEngineer(
+    token: string,
+    assignmentId: number,
+): Promise<AssignmentEngineer> {
+    const res = await api.get(`/assignments/${assignmentId}/engineer`, {
+        headers: authHeader(token),
+    });
+    return res.data;
+}
+
 // ── SSE ─────────────────────────────────────────────────────────────────
 
 export interface SseHandlers {
-    onDispatch?: (p: DispatchEventPayload) => void; // event: dispatch (상태 전이)
-    onLocation?: (p: DispatchEventPayload) => void; // event: location (지도/ETA 갱신)
+    onDispatch?: (p: DispatchEventPayload) => void;      // event: dispatch (상태 전이)
+    onLocation?: (p: DispatchEventPayload) => void;      // event: location (지도/ETA 갱신)
+    onNotification?: (n: NotificationItem) => void;      // event: notification (점주 알림)
     onConnected?: () => void;
     onError?: (err: unknown) => void;
 }
@@ -139,7 +162,8 @@ export function subscribeDispatch(token: string, handlers: SseHandlers): () => v
             try {
                 if (ev.event === 'dispatch') handlers.onDispatch?.(JSON.parse(ev.data));
                 else if (ev.event === 'location') handlers.onLocation?.(JSON.parse(ev.data));
-                // 'connected' / 'notification' 등은 여기서 무시
+                else if (ev.event === 'notification') handlers.onNotification?.(JSON.parse(ev.data));
+                // 'connected' 는 onopen 으로 처리되므로 여기선 무시
             } catch (e) {
                 console.error('[SSE] payload 파싱 실패', ev.event, ev.data, e);
             }

@@ -47,11 +47,10 @@ type StatusFilter = "ALL" | "OPERATIONAL" | "FAULTY" | "REPAIRING";
 
 const VISIBLE_LIMIT = 4;
 
-
 interface StoreHomeProps {
     onRequestAS: () => void;
     onGoReceipts: () => void;
-    onTrack?: (assignmentId: number | null) => void;
+    onTrack?: (assignmentId: number | null, engineer?: { name: string | null; phone: string | null }) => void;
     onViewAll?: () => void;
 }
 
@@ -295,7 +294,11 @@ export function StoreHome({ onRequestAS, onGoReceipts, onTrack, onViewAll }: Sto
                     rows={inProgress}
                     loading={ipLoading}
                     error={ipError}
-                    onTrack={onTrack}
+                    onTrack={(assignmentId) => {
+                        const row = inProgress.find((r) => r.assignmentId === assignmentId);
+                        onTrack?.(assignmentId, { name: row?.engineerName ?? null, phone: row?.engineerPhone ?? null });
+                    }}
+
                     onViewAll={onViewAll}
                     onViewRequest={(equipmentId, equipmentName) => setAsDetail({ equipmentId, equipmentName })}
                 />

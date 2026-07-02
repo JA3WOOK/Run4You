@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import LoginPage from "./pages/LoginPage";
@@ -8,7 +8,7 @@ import SuperAdminUsersPage from "./pages/SuperAdminUsersPage";
 import { Sidebar } from "./components/layout/Sidebar";
 import type { UserRole, Screen } from "./components/layout/Sidebar";
 import { Header } from "./components/layout/Header";
-import { ToastNotification } from "./components/common/ToastNotification";
+import { ToastNotification, type ToastView } from "./components/common/ToastNotification";
 import { StoreHome } from "./pages/store/StoreHome";
 import { StoreReceipt } from "./pages/store/StoreReceipt";
 import { StoreASForm } from "./pages/store/StoreASForm";
@@ -20,8 +20,13 @@ import BrandAdminUsersPage from "./pages/BrandAdminUsersPage";
 import { EngReport } from "./components/engineer/EngReport";
 import { AdminBilling } from "./components/admin/AdminBilling";
 import { AdminStats } from "./components/admin/AdminStats";
+import { AdminDispatchControl } from "./components/admin/AdminDispatchControl";
 import { SuperDashboard } from "./components/super/SuperDashboard";
 import { SettingsPage } from "./pages/SettingsPage";
+import { subscribeDispatch } from "./api/dispatch";
+import { getMyNotifications } from "./api/notification";
+import SuperAdminLmsPage from "./pages/SuperAdminLmsPage";
+
 
 const screenLabels: Record<string, string> = {
   "store-home": "기자재 현황",
@@ -39,6 +44,7 @@ const screenLabels: Record<string, string> = {
   "super-dashboard": "전체 통계 대시보드",
   "super-brands": "브랜드 관리",
   "super-users": "회원 관리",
+  "super-lms": "교육 콘텐츠 관리",
   "settings": "설정",
 };
 
@@ -50,12 +56,42 @@ const defaultScreen: Record<UserRole, Screen> = {
 };
 
 function Dashboard() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, accessToken } = useAuth();
   const role = (user?.role ?? "STORE_OWNER") as UserRole;
   const [screen, setScreen] = useState<Screen>(defaultScreen[role]);
   const [selectedAsRequestId, setSelectedAsRequestId] = useState<number | null>(null);
   const [acceptedAssignmentId, setAcceptedAssignmentId] = useState<number | null>(null);
   const [trackAssignmentId, setTrackAssignmentId] = useState<number | null>(null);
+  const [trackEngineer, setTrackEngineer] = useState<{ name: string | null; phone: string | null }>({ name: null, phone: null });
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [toasts, setToasts] = useState<ToastView[]>([]);
+  const [sseConnected, setSseConnected] = useState(false);
+
+  // 최초 미읽음 수 로드
+  useEffect(() => {
+    if (!accessToken) return;
+    getMyNotifications(accessToken)
+        .then((r) => setUnreadCount(r.unreadCount))
+        .catch((e) => console.warn("알림 미읽음 수 로드 실패:", e));
+  }, [accessToken]);
+
+  // 앱 레벨 SSE — notification 이벤트로 토스트 + 배지 갱신
+  useEffect(() => {
+    if (!accessToken) return;
+    const unsubscribe = subscribeDispatch(accessToken, {
+      onConnected: () => setSseConnected(true),
+      onNotification: (n) => {
+        setUnreadCount((c) => c + 1);
+        const id = Date.now() + Math.floor(Math.random() * 1000);
+        setToasts((prev) => [...prev, { id, type: n.type, title: n.title, message: n.message }]);
+        setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 5000);
+      },
+      onError: (e) => { setSseConnected(false); console.warn("[SSE/알림] 재연결 시도 중...", e); },
+    });
+    return unsubscribe;
+  }, [accessToken]);
+
+  const dismissToast = (id: number) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
   const handleScreenChange = (s: Screen) => {
     if (s === "eng-queue") setSelectedAsRequestId(null);
@@ -72,12 +108,14 @@ function Dashboard() {
             screen={screen}
             onScreenChange={handleScreenChange}
             onRoleChange={() => {}}
-            notifications={3}
+            notifications={unreadCount}
             userName={user?.name ?? ''}
             onLogout={signOut}
         />
         <main className="flex-1 overflow-y-auto">
-          <Header screenLabel={screenLabels[screen] ?? screen} currentTime={new Date().toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })} />
+
+          <Header screenLabel={screenLabels[screen] ?? screen} sseConnected={sseConnected} />
+
           <div className="px-8 py-6">
 
             {/* ── 점주 ── */}
@@ -85,15 +123,31 @@ function Dashboard() {
                 <StoreHome
                     onRequestAS={() => setScreen("store-as-form")}
                     onGoReceipts={() => setScreen("store-receipt")}
-                    onTrack={(assignmentId) => {
+                    onTrack={(assignmentId, engineer) => {
                       setTrackAssignmentId(assignmentId);
+                      setTrackEngineer({ name: engineer?.name ?? null, phone: engineer?.phone ?? null });
                       setScreen("store-dispatch");
                     }}
                 />
             )}
             {screen === "store-as-form" && <StoreASForm onComplete={() => setScreen("store-home")} />}
             {screen === "store-receipt" && <StoreReceipt />}
-            {screen === "store-dispatch" && <StoreDispatch assignmentId={trackAssignmentId ?? 1} />}
+            {screen === "store-dispatch" && (
+                trackAssignmentId != null ? (
+                    <StoreDispatch
+                        assignmentId={trackAssignmentId}
+                        engineerName={trackEngineer.name}
+                        engineerPhone={trackEngineer.phone}
+                    />
+                ) : (
+                    <div
+                        className="rounded-xl p-8 text-center"
+                        style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--muted-foreground)", fontSize: 14 }}
+                    >
+                      추적할 출동 건이 없습니다. 기자재 현황의 "진행 중 A/S"에서 추적을 눌러 진입해 주세요.
+                    </div>
+                )
+            )}
 
             {/* ── 엔지니어 ── */}
             {screen === "eng-queue" && (
@@ -119,10 +173,19 @@ function Dashboard() {
                 />
             )}
             {screen === "eng-status" && (
-                <EngStatus
-                    assignmentId={acceptedAssignmentId ?? 1}
-                    onComplete={() => setScreen("eng-queue")}
-                />
+                acceptedAssignmentId != null ? (
+                    <EngStatus
+                        assignmentId={acceptedAssignmentId}
+                        onComplete={() => setScreen("eng-queue")}
+                    />
+                ) : (
+                    <div
+                        className="rounded-xl p-8 text-center"
+                        style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--muted-foreground)", fontSize: 14 }}
+                    >
+                      수락한 출동 건이 없습니다. "출동 요청 대기열"에서 먼저 수락해 주세요.
+                    </div>
+                )
             )}
             {screen === "eng-report" && (
                 <EngReport
@@ -135,7 +198,12 @@ function Dashboard() {
             )}
 
             {/* ── 본사 관리자 ── */}
-            {screen === "admin-dashboard" && <AdminStats />}
+            {screen === "admin-dashboard" && (
+                <div className="flex flex-col gap-6">
+                    <AdminDispatchControl />
+                    <AdminStats />
+                </div>
+            )}
             {screen === "admin-billing" && <AdminBilling />}
             {screen === "admin-users" && <BrandAdminUsersPage />}
 
@@ -146,10 +214,11 @@ function Dashboard() {
             {screen === "super-dashboard" && <SuperDashboard />}
             {screen === "super-brands" && <SuperAdminBrandsPage />}
             {screen === "super-users" && <SuperAdminUsersPage />}
+            {screen === "super-lms" && <SuperAdminLmsPage />}
 
           </div>
         </main>
-        <ToastNotification />
+        <ToastNotification toasts={toasts} onDismiss={dismissToast} />
       </div>
   );
 }

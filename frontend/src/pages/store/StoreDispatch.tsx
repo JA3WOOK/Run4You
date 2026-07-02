@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Clock, Phone, Star, Navigation, Zap } from "lucide-react";
+import { Clock, Phone, Navigation, Zap } from "lucide-react";
 import { Stepper } from "../../components/common/Stepper";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -8,6 +8,7 @@ import {
     type DispatchStatus,
     type TimelineItem,
 } from "../../api/dispatch";
+
 
 // 상태 → Stepper current 인덱스 (COMPLETED 는 4로 두어 4단계 모두 done 처리)
 const STATUS_STEP: Record<string, number> = {
@@ -71,12 +72,15 @@ function MapDot({ x, y, label, color = "#2563EB", pulse = false }: MapDotProps) 
 
 // assignmentId: 점주의 진행 중 접수에 대응하는 배정 ID. 상위(목록/홈)에서 내려준다.
 export function StoreDispatch({
-    assignmentId = 1,
-    engineerName = "박성민",
-}: {
-    assignmentId?: number;
-    engineerName?: string;
+                                  assignmentId,
+                                  engineerName,
+                                  engineerPhone,
+                              }: {
+    assignmentId: number;
+    engineerName: string | null;
+    engineerPhone: string | null;
 }) {
+
     const { accessToken } = useAuth();
 
     const [status, setStatus] = useState<DispatchStatus>("ACCEPTED");
@@ -163,7 +167,7 @@ export function StoreDispatch({
             >
                 <Zap size={16} style={{ color: "#2563EB" }} />
                 <span style={{ fontSize: 13, color: "#1E40AF", fontWeight: 500 }}>
-                    {engineerName} 엔지니어 · {banner.text}
+                {engineerName ? `${engineerName} 엔지니어 · ` : ""}{banner.text}
                 </span>
                 {banner.live && (
                     <span
@@ -196,15 +200,11 @@ export function StoreDispatch({
                             className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
                             style={{ background: "#1E293B", color: "#CBD5E1", fontWeight: 700 }}
                         >
-                            {engineerName.charAt(0)}
+                            {(engineerName ?? "?").charAt(0)}
                         </div>
                         <div className="flex-1">
                             <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>
-                                {engineerName} 엔지니어
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5">
-                                <Star size={11} style={{ color: "#F59E0B" }} />
-                                <span style={{ fontSize: 11, color: "#64748B" }}>4.9 · 전문 엔지니어</span>
+                                {engineerName ? `${engineerName} 엔지니어` : "엔지니어 배정 대기"}
                             </div>
                             <div className="flex items-center gap-1 mt-0.5">
                                 <Navigation size={11} style={{ color: "#94A3B8" }} />
@@ -212,14 +212,23 @@ export function StoreDispatch({
                                     {eta != null ? `현재 ${eta}분 거리` : "도착 완료"}
                                 </span>
                             </div>
+                            {engineerPhone && (
+                                <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>{engineerPhone}</div>
+                            )}
                         </div>
-                        <button
+                        <a
+                            href={engineerPhone ? `tel:${engineerPhone}` : undefined}
                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg"
-                            style={{ background: "#2563EB", color: "#fff", fontSize: 12, fontWeight: 600 }}
+                            style={{
+                                background: engineerPhone ? "#2563EB" : "#94A3B8",
+                                color: "#fff", fontSize: 12, fontWeight: 600,
+                                pointerEvents: engineerPhone ? "auto" : "none", textDecoration: "none",
+                            }}
                         >
                             <Phone size={11} />
                             통화
-                        </button>
+                        </a>
+
                     </div>
                 </div>
 
@@ -248,7 +257,7 @@ export function StoreDispatch({
                             fill="none" stroke="#2563EB" strokeWidth={3} strokeDasharray="6,3" opacity={0.6}
                         />
                         <MapDot x={STORE.x} y={STORE.y} label="내 매장" color="#DC2626" />
-                        <MapDot x={engineerPos.x} y={engineerPos.y} label={engineerName} color="#2563EB" pulse />
+                        <MapDot x={engineerPos.x} y={engineerPos.y} label={engineerName ?? "엔지니어"} color="#2563EB" pulse />
                     </svg>
 
                     {/* ETA overlay */}

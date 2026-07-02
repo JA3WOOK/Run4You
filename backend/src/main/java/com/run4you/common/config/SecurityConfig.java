@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/brands/active").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/lms/**").authenticated()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )
