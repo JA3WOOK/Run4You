@@ -22,6 +22,7 @@ export interface Equipment {
 
 // 목록 + 카운트 (EquipmentListResponseDto)
 export interface EquipmentListResponse {
+    storeName: string;
     totalCount: number;
     operationalCount: number;
     faultyCount: number;
