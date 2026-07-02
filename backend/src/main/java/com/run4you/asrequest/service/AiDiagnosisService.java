@@ -144,7 +144,7 @@ public class AiDiagnosisService {
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 return restClient.post()
-                        .uri("/models/gemini-2.5-flash-lite:generateContent?key=" + apiKey)
+                        .uri("/models/gemini-2.5-flash:generateContent?key=" + apiKey)
                         .body(body)
                         .retrieve()
                         .body(String.class);
