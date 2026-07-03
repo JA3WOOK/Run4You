@@ -13,6 +13,17 @@ const STAGES: { key: Stage; status: DispatchStatus; label: string; icon: ReactNo
     { key: 3, status: "COMPLETED", label: "수리 완료", icon: <CheckCircle size={18} />, color: "#16A34A", bg: "#F0FDF4", desc: "점주 서명 후 완료 처리" },
 ];
 
+// 서버가 돌려준 DispatchStatus → 화면 stage 역매핑 (서버 = 진실의 원천)
+// 현재 DB status → "다음에 보낼 STAGES 인덱스"
+// STAGES = [DISPATCHED(0), ARRIVED(1), REPAIRING(2), COMPLETED(3)]
+const STATUS_TO_STAGE: Record<string, Stage> = {
+    ACCEPTED: 0,     // 아직 출동 전 → 다음에 보낼 것: DISPATCHED (STAGES[0])
+    DISPATCHED: 1,   // 출동 완료 → 다음에 보낼 것: ARRIVED   (STAGES[1])
+    ARRIVED: 2,      // 도착 완료 → 다음에 보낼 것: REPAIRING (STAGES[2])
+    REPAIRING: 3,    // 수리 중  → 다음에 보낼 것: COMPLETED (STAGES[3])
+    COMPLETED: 3,    // 완료 → 마지막 유지
+};
+
 // 현재 좌표 1회 획득(출동/도착 시 ETA 산출용). 실패하면 좌표 없이 진행.
 function getCoords(): Promise<{ latitude: number; longitude: number } | null> {
     return new Promise((resolve) => {
@@ -69,14 +80,14 @@ export function EngStatus({
         if (busy) return;
         setError("");
 
-        // 마지막 단계 도달 시 리포트 작성으로 이동
-        if (stage >= 3) {
+        // COMPLETED 까지 이미 보냈으면(로그에 완료 기록 존재) 리포트로 이동
+        if (times[3]) {
             onComplete();
             return;
         }
 
-        const next = (stage + 1) as Stage;
-        const target = STAGES[next];
+        // stage = 이번에 보낼 STAGES 인덱스. STAGES[stage] 자체를 전이 대상으로 사용(오프셋 없음).
+        const target = STAGES[stage];
         setBusy(true);
         try {
             const coords = target.status === "ARRIVED" ? await getCoords() : null;
@@ -84,8 +95,10 @@ export function EngStatus({
                 status: target.status,
                 ...(coords ?? {}),
             });
-            record(next, p.changedAt);
-            setStage(next);
+            // 서버가 확정한 실제 상태 기준으로 다음 stage 계산 (서버 = 진실의 원천)
+            const confirmed = STATUS_TO_STAGE[p.status] ?? stage;
+            record(stage, p.changedAt);
+            setStage(confirmed);
         } catch (e: unknown) {
             const msg =
                 (e as { response?: { data?: { message?: string } } })?.response?.data?.message ??
@@ -198,7 +211,7 @@ export function EngStatus({
                 disabled={busy}
                 className="py-4 rounded-xl transition-all hover:opacity-90 flex items-center justify-center gap-2"
                 style={{
-                    background: stage < 3 ? STAGES[stage + 1].color : "#16A34A",
+                    background: times[3] ? "#16A34A" : STAGES[stage].color,
                     color: "#fff",
                     fontSize: 15,
                     fontWeight: 700,
@@ -209,15 +222,15 @@ export function EngStatus({
             >
                 {busy ? (
                     "처리 중..."
-                ) : stage < 3 ? (
+                ) : times[3] ? (
                     <>
-                        {STAGES[stage + 1].icon}
-                        다음 단계: {STAGES[stage + 1].label}
+                        <CheckCircle size={18} />
+                        완료 · 리포트 작성
                     </>
                 ) : (
                     <>
-                        <CheckCircle size={18} />
-                        수리 완료 처리
+                        {STAGES[stage].icon}
+                        {STAGES[stage].label}
                     </>
                 )}
             </button>

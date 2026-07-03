@@ -54,6 +54,15 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ErrorCode.OUT_OF_SERVICE_RADIUS));
     }
 
+    /** DB 제약 위반(UNIQUE/FK 등) — 409 Conflict. 사전검증을 뚫은 경쟁조건의 안전망 */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(
+            org.springframework.dao.DataIntegrityViolationException e) {
+        log.warn("[예외] DataIntegrityViolation: {}", e.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ErrorCode.ALREADY_ASSIGNED));
+    }
+
     /** IllegalArgumentException — 400 Bad Request */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException e) {

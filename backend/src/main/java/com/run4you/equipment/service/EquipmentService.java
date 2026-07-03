@@ -119,6 +119,11 @@ public class EquipmentService {
         User user = getCurrentUser();
         Store store = getCurrentStore(user);
 
+        // 시리얼 번호 중복 사전 검증 (serial_no UNIQUE) — 위반 시 500 대신 명확한 400 반환
+        if (equipmentRepository.existsBySerialNo(createDto.getSerialNo())) {
+            throw new IllegalArgumentException("이미 등록된 시리얼 번호입니다: " + createDto.getSerialNo());
+        }
+
         Equipment equipment = Equipment.builder()
                 .store(store)
                 .name(createDto.getName())

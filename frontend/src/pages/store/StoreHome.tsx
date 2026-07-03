@@ -32,11 +32,13 @@ type StatusFilter = "ALL" | "OPERATIONAL" | "FAULTY" | "REPAIRING";
 const VISIBLE_LIMIT = 5;
 
 export function StoreHome({
-                              onRequestAS, onGoReceipts, onTrack, onViewAll,
+                              onRequestAS, onGoReceipts, onTrack, onViewAll, refreshSignal,
                           }: {
     onRequestAS: () => void;
     onGoReceipts: () => void;
     onTrack?: (assignmentId: number | null, engineer?: { name: string | null; phone: string | null }) => void;    onViewAll?: () => void;
+    /** 앱 레벨 SSE 알림 수신 시마다 증가 — 목록/카운트 새로고침 없이 실시간 반영 */
+    refreshSignal?: number;
 }) {
     const { accessToken, user } = useAuth();
     const [data, setData] = useState<EquipmentListResponse | null>(null);
@@ -57,6 +59,12 @@ export function StoreHome({
     const [reload, setReload] = useState(0);
     const [doneCount, setDoneCount] = useState<number | null>(null);
     const [showAll, setShowAll] = useState(false);
+
+    // 앱 레벨 SSE 알림이 올 때마다 목록/진행중/완료수 재조회 (새로고침 불필요)
+    useEffect(() => {
+        if (refreshSignal === undefined) return;
+        setReload((v) => v + 1);
+    }, [refreshSignal]);
 
     const gridRef = useRef<HTMLDivElement>(null);
     const inProgressRef = useRef<HTMLDivElement>(null);

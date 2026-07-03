@@ -1,7 +1,7 @@
 import {
     LayoutDashboard, Wrench, MapPin, FileText, ClipboardList,
     Settings, Bell, ChevronRight, LogOut, Zap, BarChart3,
-    CreditCard, Package, Building2, Users, BookOpen
+    CreditCard, Package, Building2, Users
 } from "lucide-react";
 
 export type UserRole = "STORE_OWNER" | "ENGINEER" | "BRAND_ADMIN" | "SUPER_ADMIN";
@@ -16,6 +16,7 @@ interface SidebarProps {
     role: UserRole;
     screen: Screen;
     onScreenChange: (s: Screen) => void;
+    onNotificationsClick?: () => void;
     onRoleChange: (r: UserRole) => void;
     notifications: number;
     userName: string;
@@ -54,7 +55,6 @@ const navItems: Record<UserRole, { label: string; screen: Screen; icon: React.Re
         { label: "기자재 관리", screen: "admin-equipment", icon: <Package size={19} /> },
         { label: "정산 관리", screen: "admin-billing", icon: <CreditCard size={19} /> },
         { label: "회원 승인 관리", screen: "admin-users", icon: <Users size={19} /> },
-        { label: "교육 콘텐츠 관리", screen: "super-lms", icon: <BookOpen size={19} /> },
     ],
     SUPER_ADMIN: [
         { label: "전체 통계 대시보드", screen: "super-dashboard", icon: <BarChart3 size={19} /> },
@@ -63,7 +63,7 @@ const navItems: Record<UserRole, { label: string; screen: Screen; icon: React.Re
     ],
 };
 
-export function Sidebar({ role, screen, onScreenChange, onRoleChange, notifications, userName, onLogout }: SidebarProps) {
+export function Sidebar({ role, screen, onScreenChange, onNotificationsClick, onRoleChange, notifications, userName, onLogout }: SidebarProps) {
     const items = navItems[role];
 
     return (
@@ -148,7 +148,7 @@ export function Sidebar({ role, screen, onScreenChange, onRoleChange, notificati
 
             {/* Bottom */}
             <div className="px-3 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 12 }}>
-                <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full transition-all group" style={{ color: "#64748B" }}>
+                <button onClick={onNotificationsClick} className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full transition-all group" style={{ color: "#64748B", cursor: "pointer" }}>
                     <Bell size={18} />
                     <span style={{ fontSize: 15 }}>알림</span>
                     {notifications > 0 && (
@@ -177,7 +177,6 @@ export function Sidebar({ role, screen, onScreenChange, onRoleChange, notificati
                     <button
                         onClick={e => { e.stopPropagation(); onLogout(); }}
                         className="p-1.5 rounded-md transition-all"
-                        style={{ color: "#475569" }}
                         onMouseEnter={e => (e.currentTarget.style.color = "#F87171", e.currentTarget.style.background = "rgba(248,113,113,0.1)")}
                         onMouseLeave={e => (e.currentTarget.style.color = "#475569", e.currentTarget.style.background = "transparent")}
                         style={{ color: "#475569", cursor: "pointer" }}

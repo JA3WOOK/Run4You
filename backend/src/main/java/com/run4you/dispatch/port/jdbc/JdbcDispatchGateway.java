@@ -83,6 +83,18 @@ public class JdbcDispatchGateway implements AssignmentGateway, LocationGateway, 
                      WHERE a.id = ?
                     """, asStatus, at, assignmentId);
         }
+
+        // 3) 종료 상태(완료/취소) 시 엔지니어 가용성 복원 — 수락 시 BUSY 로 바뀐 뒤
+        //    되돌리는 주체가 없어 대기열이 영구히 비는 문제를 여기서 해소한다.
+        //    (③ 매칭 도메인 소유 테이블이지만, 본 어댑터가 코어 상태 동기화 책임을 이미 지고 있음)
+        if (newStatus == DispatchStatus.COMPLETED || newStatus == DispatchStatus.CANCELLED) {
+            jdbc.update("""
+                    UPDATE engineer_profiles ep
+                    JOIN assignments a ON a.engineer_id = ep.user_id
+                       SET ep.availability_status = 'AVAILABLE', ep.updated_at = ?
+                     WHERE a.id = ?
+                    """, at, assignmentId);
+        }
     }
 
     /** 출동(미시) 상태 → A/S 접수(거시) 상태 매핑 */

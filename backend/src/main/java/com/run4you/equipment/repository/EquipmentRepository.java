@@ -11,6 +11,9 @@ import java.util.List;
 
 public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
 
+    /** 시리얼 번호 중복 검사 — serial_no UNIQUE 제약의 사전 검증용 */
+    boolean existsBySerialNo(String serialNo);
+
     // 해당 매장 기자재 전체 조회
     @Query("SELECT e FROM Equipment e WHERE e.store.id = :storeId AND e.deletedAt IS NULL")
     List<Equipment> findActiveByStoreId(@Param("storeId") Long storeId);
