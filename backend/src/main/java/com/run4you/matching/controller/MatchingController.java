@@ -1,10 +1,7 @@
 package com.run4you.matching.controller;
 
 import com.run4you.common.response.ApiResponse;
-import com.run4you.matching.dto.ActiveAssignmentResponse;
-import com.run4you.matching.dto.AssignmentDetailResponse;
-import com.run4you.matching.dto.CandidateScoreResponse;
-import com.run4you.matching.dto.MatchingQueueItemResponse;
+import com.run4you.matching.dto.*;
 import com.run4you.matching.entity.Assignment;
 import com.run4you.matching.service.MatchingService;
 import lombok.RequiredArgsConstructor;
@@ -90,5 +87,14 @@ public class MatchingController {
     ) {
         List<CandidateScoreResponse> candidates = matchingService.getCandidateScores(asRequestId);
         return ResponseEntity.ok(ApiResponse.success(candidates));
+    }
+
+    /** 리포트 미작성 수리 완료 건 조회 */
+    @GetMapping("/pending-reports")
+    @PreAuthorize("hasRole('ENGINEER')")
+    public ResponseEntity<ApiResponse<List<PendingReportResponse>>> getPendingReports(
+            @AuthenticationPrincipal String email
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(matchingService.getPendingReports(email)));
     }
 }

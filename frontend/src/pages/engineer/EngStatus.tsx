@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import { MapPin, Wrench, CheckCircle, Navigation, Clock } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { changeStatus, pingLocation, type DispatchStatus } from "../../api/dispatch";
+import { changeStatus, pingLocation, fetchDispatchHistory, type DispatchStatus } from "../../api/dispatch";
 
 type Stage = 0 | 1 | 2 | 3;
 
@@ -53,6 +53,24 @@ function getCoords(): Promise<{ latitude: number; longitude: number } | null> {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
     const [times, setTimes] = useState<Record<number, string>>({}); // stage → changedAt(HH:mm)
+
+// 마운트 시 서버 이력으로 시간 로그 복구
+        useEffect(() => {
+            if (!accessToken) return;
+            fetchDispatchHistory(accessToken, assignmentId)
+                .then((history) => {
+                    const restored: Record<number, string> = {};
+                    history.forEach((h) => {
+                        const idx = STAGES.findIndex((s) => s.status === h.status);
+                        if (idx !== -1) {
+                            const d = new Date(h.changedAt);
+                            restored[idx] = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+                        }
+                    });
+                    setTimes(restored);
+                })
+                .catch((e) => console.warn("상태 이력 조회 실패:", e));
+        }, [accessToken, assignmentId]);
 
     const record = (k: number, iso: string) => {
         const d = new Date(iso);

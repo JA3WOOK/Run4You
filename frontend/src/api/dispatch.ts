@@ -7,8 +7,15 @@ const api = axios.create({ baseURL: 'http://localhost:8080/api' });
 function authHeader(token: string) {
     return { Authorization: `Bearer ${token}` };
 }
-
+export interface DispatchHistoryItem { status: string; changedAt: string; }
 export const SSE_URL = 'http://localhost:8080/api/notifications/subscribe';
+
+export async function fetchDispatchHistory(token: string, assignmentId: number): Promise<DispatchHistoryItem[]> {
+    const res = await api.get(`/assignments/${assignmentId}/history`, {
+        headers: authHeader(token),
+    });
+    return res.data.data;
+}
 
 // 출동 상태머신: ACCEPTED → DISPATCHED → ARRIVED → REPAIRING → COMPLETED
 export type DispatchStatus =

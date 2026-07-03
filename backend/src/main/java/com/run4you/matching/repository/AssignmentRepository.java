@@ -84,4 +84,16 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
         ORDER BY a.assignedAt DESC
         """)
     List<Assignment> findActiveByEngineerId(@Param("engineerId") Long engineerId);
+
+    /** 리포트 미작성 수리 완료 건 조회 */
+    @Query("""
+        SELECT a FROM Assignment a
+        JOIN FETCH a.asRequest ar
+        JOIN FETCH ar.equipment eq
+        WHERE a.engineer.id = :engineerId
+          AND a.status = 'COMPLETED'
+          AND NOT EXISTS (SELECT 1 FROM RepairReport r WHERE r.assignmentId = a.id)
+        ORDER BY a.completedAt DESC
+        """)
+    List<Assignment> findPendingReportsByEngineerId(@Param("engineerId") Long engineerId);
 }

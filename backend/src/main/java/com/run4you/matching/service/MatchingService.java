@@ -4,10 +4,7 @@ import com.run4you.asrequest.entity.AsRequest;
 import com.run4you.asrequest.repository.AsRequestRepository;
 import com.run4you.common.enums.AvailabilityStatus;
 import com.run4you.common.exception.*;
-import com.run4you.matching.dto.ActiveAssignmentResponse;
-import com.run4you.matching.dto.AssignmentDetailResponse;
-import com.run4you.matching.dto.CandidateScoreResponse;
-import com.run4you.matching.dto.MatchingQueueItemResponse;
+import com.run4you.matching.dto.*;
 import com.run4you.matching.entity.Assignment;
 import com.run4you.matching.entity.AssignmentCandidate;
 import com.run4you.matching.entity.EngineerProfile;
@@ -247,6 +244,13 @@ public class MatchingService {
             return null;
         }
         return ActiveAssignmentResponse.of(active.get(0));
+    }
+
+    /** 리포트 미작성 수리 완료 건 조회 */
+    public List<PendingReportResponse> getPendingReports(String email) {
+        EngineerProfile ep = getEngineerProfile(email);
+        return assignmentRepository.findPendingReportsByEngineerId(ep.getUser().getId())
+                .stream().map(PendingReportResponse::of).toList();
     }
 
     // ─────────────────────────────────────────────────────────────────

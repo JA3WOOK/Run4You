@@ -75,6 +75,17 @@ export interface AcceptResult {
     status: string;
 }
 
+/** 리포트 미작성 수리 완료 건 조회 */
+export interface PendingReport {
+  assignmentId: number;
+  asRequestId: number;
+  equipmentId: number;
+  engineerId: number;
+  equipmentName: string;
+  storeName: string;
+  completedAt: string;
+}
+
 // ─── API 호출 ─────────────────────────────────────────────────────
 
 /** 출동 대기열 조회 — GET /api/assignments/queue */
@@ -130,4 +141,13 @@ export async function fetchMyActiveAssignment(token: string | null): Promise<Act
   if (!res.ok) throw new Error("현재 배정 조회 실패");
   const body = await res.json();
   return body.data; // null 또는 { assignmentId, asRequestId, status }
+}
+
+/** 리포트 미작성 수리 완료 건 조회 */
+export async function fetchPendingReports(token: string | null): Promise<PendingReport[]> {
+  const res = await fetch(`${BASE_URL}/api/assignments/pending-reports`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("작성 대기 리포트 조회 실패");
+  return (await res.json()).data;
 }

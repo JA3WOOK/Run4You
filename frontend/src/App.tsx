@@ -17,7 +17,7 @@ import { EngQueue } from "./components/engineer/EngQueue";
 import { EngDetail } from "./components/engineer/EngDetail";
 import { EngStatus } from "./pages/engineer/EngStatus";
 import BrandAdminUsersPage from "./pages/BrandAdminUsersPage";
-import { EngReport } from "./components/engineer/EngReport";
+import { EngReportHub } from "./components/engineer/EngReportHub";
 import { AdminBilling } from "./components/admin/AdminBilling";
 import { AdminStats } from "./components/admin/AdminStats";
 import { AdminDispatchControl } from "./components/admin/AdminDispatchControl";
@@ -238,24 +238,14 @@ function Dashboard() {
                         )
                     )}
                     {screen === "eng-report" && (
-                        reportContext ? (
-                            <EngReport
-                                assignmentId={reportContext.assignmentId}
-                                asRequestId={reportContext.asRequestId}
-                                engineerId={reportContext.engineerId}
-                                equipmentId={reportContext.equipmentId}
-                                onSubmit={() => {
-                                    setAcceptedAssignmentId(null);
-                                    setAcceptedStatus(null);
-                                    setReportContext(null);
-                                    setScreen("eng-queue");
-                                }}
-                            />
-                        ) : (
-                            <div className="rounded-xl p-8 text-center" style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--muted-foreground)", fontSize: 14 }}>
-                                작성할 정비 리포트가 없습니다. "출동 요청 대기열"에서 먼저 출동을 진행해주세요.
-                            </div>
-                        )
+                        <EngReportHub
+                            initialContext={reportContext}
+                            onSubmitted={() => {
+                                setAcceptedAssignmentId(null);
+                                setAcceptedStatus(null);
+                                setReportContext(null);
+                            }}
+                        />
                     )}
 
                     {/* ── 엔지니어: 교육(LMS) ── */}
