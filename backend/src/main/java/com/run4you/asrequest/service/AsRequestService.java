@@ -326,20 +326,18 @@ public class AsRequestService {
 
                     if (assignment != null) {
                         assignmentId = assignment.getId();
-
                         if (assignment.getEngineer() != null) {
                             engineerName = assignment.getEngineer().getName();
                             engineerPhone = assignment.getEngineer().getPhone();
                         }
 
-                        // 최신 이력 1건에서 현재 상태 + ETA 동시 취득
                         var latest = dispatchStatusHistoryRepository
                                 .findFirstByAssignmentIdOrderByChangedAtDesc(assignment.getId())
                                 .orElse(null);
-                        if (latest != null) {
-                            currentStatus = latest.getStatus();
-                            etaMinutes = latest.getEtaMinutes();
-                        }
+
+                        // 수락 직후 이력이 아직 없어도 "배정은 됐다"는 사실은 알 수 있도록 기본값 보정
+                        currentStatus = (latest != null) ? latest.getStatus() : DispatchStatus.ACCEPTED;
+                        etaMinutes = (latest != null) ? latest.getEtaMinutes() : null;
                     }
 
                     return InProgressAsListResponseDto.InProgressItemDto.builder()

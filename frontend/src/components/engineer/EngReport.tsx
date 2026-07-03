@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2, CheckCircle, FileText } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { createReport } from "../../api/report";
@@ -21,17 +21,42 @@ interface Props {
  */
 export function EngReport({ assignmentId = 0, asRequestId = 0, engineerId = 0, equipmentId = 0, onSubmit }: Props) {
   const { accessToken } = useAuth();
-  const [parts, setParts] = useState<Part[]>([{ code: "", name: "", qty: 1, price: 0 }]);
-  const [labor, setLabor] = useState("0");
-  const [opinion, setOpinion] = useState("");
+  const draftKey = `report-draft:${assignmentId}`;
+
+  const [parts, setParts] = useState<Part[]>(() => {
+    try {
+      const saved = localStorage.getItem(draftKey);
+      if (saved) return JSON.parse(saved).parts;
+    } catch {}
+    return [{ code: "", name: "", qty: 1, price: 0 }];
+  });
+  const [labor, setLabor] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(draftKey);
+      if (saved) return JSON.parse(saved).labor;
+    } catch {}
+    return "0";
+  });
+  const [opinion, setOpinion] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(draftKey);
+      if (saved) return JSON.parse(saved).opinion;
+    } catch {}
+    return "";
+  });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 입력할 때마다 자동 저장
+  useEffect(() => {
+    try { localStorage.setItem(draftKey, JSON.stringify({ parts, labor, opinion })); } catch {}
+  }, [parts, labor, opinion, draftKey]);
+
   const addPart = () => setParts((p) => [...p, { code: "", name: "", qty: 1, price: 0 }]);
   const removePart = (i: number) => setParts((p) => p.filter((_, idx) => idx !== i));
   const updatePart = (i: number, field: keyof Part, value: string | number) =>
-    setParts((p) => p.map((part, idx) => idx === i ? { ...part, [field]: value } : part));
+      setParts((p) => p.map((part, idx) => idx === i ? { ...part, [field]: value } : part));
 
   const partsCost = parts.reduce((acc, p) => acc + p.qty * p.price, 0);
   const totalCost = partsCost + Number(labor);
@@ -49,6 +74,7 @@ export function EngReport({ assignmentId = 0, asRequestId = 0, engineerId = 0, e
         diagnosis: opinion,
         parts: parts.map((p) => ({ partCode: p.code, quantity: p.qty, appliedPrice: p.price })),
       });
+      try { localStorage.removeItem(draftKey); } catch {}   // ★ 제출 성공 시 draft 삭제
       setSubmitted(true);
       if (onSubmit) setTimeout(onSubmit, 1800);
     } catch (e: any) {

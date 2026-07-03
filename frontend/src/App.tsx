@@ -17,7 +17,7 @@ import { EngQueue } from "./components/engineer/EngQueue";
 import { EngDetail } from "./components/engineer/EngDetail";
 import { EngStatus } from "./pages/engineer/EngStatus";
 import BrandAdminUsersPage from "./pages/BrandAdminUsersPage";
-import { EngReport } from "./components/engineer/EngReport";
+import { EngReportHub } from "./components/engineer/EngReportHub";
 import { AdminBilling } from "./components/admin/AdminBilling";
 import { AdminStats } from "./components/admin/AdminStats";
 import { AdminDispatchControl } from "./components/admin/AdminDispatchControl";
@@ -31,6 +31,7 @@ import EngineerCourseListPage from "./pages/engineer/EngineerCourseListPage";
 import EngineerCourseDetailPage from "./pages/engineer/EngineerCourseDetailPage";
 import EngineerExamPage from "./pages/engineer/EngineerExamPage";
 import EngineerManualPage from "./pages/engineer/EngineerManualPage";
+import { fetchMyActiveAssignment } from "./api/matching";
 
 
 const screenLabels: Record<string, string> = {
@@ -70,6 +71,7 @@ function Dashboard() {
     const [screen, setScreen] = useState<Screen>(defaultScreen[role]);
     const [selectedAsRequestId, setSelectedAsRequestId] = useState<number | null>(null);
     const [acceptedAssignmentId, setAcceptedAssignmentId] = useState<number | null>(null);
+    const [acceptedStatus, setAcceptedStatus] = useState<string | null>(null);
     const [trackAssignmentId, setTrackAssignmentId] = useState<number | null>(null);
     const [trackEngineer, setTrackEngineer] = useState<{ name: string | null; phone: string | null }>({ name: null, phone: null });
     const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
@@ -78,6 +80,9 @@ function Dashboard() {
     const [sseConnected, setSseConnected] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
     const [notifSignal, setNotifSignal] = useState(0);
+    const [reportContext, setReportContext] = useState<{
+        assignmentId: number; asRequestId: number; equipmentId: number; engineerId: number;
+    } | null>(null);
 
     // 최초 미읽음 수 로드
     useEffect(() => {
@@ -103,6 +108,27 @@ function Dashboard() {
         });
         return unsubscribe;
     }, [accessToken]);
+
+    // 엔지니어 로그인/새로고침 시 진행 중인 배정이 있으면 자동 복구
+    useEffect(() => {
+        if (!accessToken || role !== "ENGINEER") return;
+        fetchMyActiveAssignment(accessToken)
+            .then((active) => {
+                if (active) {
+                    setAcceptedAssignmentId(active.assignmentId);
+                    setAcceptedStatus(active.status);
+                    // 초기 화면(대기열)에 그대로 있을 때만 상태 변경 화면으로 자동 이동
+                    setScreen((prev) => (prev === "eng-queue" ? "eng-status" : prev));
+                    setReportContext({
+                        assignmentId: active.assignmentId,
+                        asRequestId: active.asRequestId,
+                        equipmentId: active.equipmentId,
+                        engineerId: active.engineerId,
+                    });
+                }
+            })
+            .catch((e) => console.warn("활성 배정 조회 실패:", e));
+    }, [accessToken, role]);
 
     const dismissToast = (id: number) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
@@ -168,7 +194,12 @@ function Dashboard() {
                     {/* ── 엔지니어 ── */}
                     {screen === "eng-queue" && (
                         <EngQueue
+                            hasActiveAssignment={acceptedAssignmentId != null}
                             onSelect={(asRequestId) => {
+                                if (acceptedAssignmentId != null) {
+                                    alert("이미 진행 중인 출동 건이 있습니다. 완료 후 다시 시도해주세요.");
+                                    return;
+                                }
                                 setSelectedAsRequestId(asRequestId);
                                 setScreen("eng-detail");
                             }}
@@ -181,8 +212,10 @@ function Dashboard() {
                                 setSelectedAsRequestId(null);
                                 setScreen("eng-queue");
                             }}
-                            onAccepted={(assignmentId) => {
+                            onAccepted={(assignmentId, ctx) => {
                                 setAcceptedAssignmentId(assignmentId);
+                                setAcceptedStatus("ACCEPTED");
+                                setReportContext({ assignmentId, asRequestId: ctx.asRequestId, equipmentId: ctx.equipmentId, engineerId: ctx.engineerId, });
                                 setSelectedAsRequestId(null);
                                 setScreen("eng-status");
                             }}
@@ -192,7 +225,8 @@ function Dashboard() {
                         acceptedAssignmentId != null ? (
                             <EngStatus
                                 assignmentId={acceptedAssignmentId}
-                                onComplete={() => setScreen("eng-queue")}
+                                initialStatus={acceptedStatus ?? undefined}
+                                onComplete={() => setScreen("eng-report")}
                             />
                         ) : (
                             <div
@@ -204,12 +238,13 @@ function Dashboard() {
                         )
                     )}
                     {screen === "eng-report" && (
-                        <EngReport
-                            assignmentId={acceptedAssignmentId ?? Date.now()}
-                            asRequestId={selectedAsRequestId ?? 1}
-                            engineerId={4}
-                            equipmentId={1}
-                            onSubmit={() => setScreen("eng-queue")}
+                        <EngReportHub
+                            initialContext={reportContext}
+                            onSubmitted={() => {
+                                setAcceptedAssignmentId(null);
+                                setAcceptedStatus(null);
+                                setReportContext(null);
+                            }}
                         />
                     )}
 

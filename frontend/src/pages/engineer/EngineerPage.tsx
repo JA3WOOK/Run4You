@@ -1,46 +1,50 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { fetchMyActiveAssignment } from "../../api/matching";
 import { EngQueue } from "../../components/engineer/EngQueue";
 import { EngDetail } from "../../components/engineer/EngDetail";
+import { EngStatus } from "../../components/engineer/EngStatus";
 
 type View =
-  | { type: "queue" }
-  | { type: "detail"; asRequestId: number }
-  | { type: "accepted"; assignmentId: number };
+    | { type: "loading" }
+    | { type: "queue" }
+    | { type: "detail"; asRequestId: number }
+    | { type: "accepted"; assignmentId: number };
 
 export default function EngineerPage() {
-  const [view, setView] = useState<View>({ type: "queue" });
+    const { accessToken } = useAuth();
+    const [view, setView] = useState<View>({ type: "loading" });
 
-  if (view.type === "queue") {
+    useEffect(() => {
+        fetchMyActiveAssignment(accessToken)
+            .then((active) =>
+                setView(active ? { type: "accepted", assignmentId: active.assignmentId } : { type: "queue" })
+            )
+            .catch(() => setView({ type: "queue" }));
+    }, [accessToken]);
+
+    if (view.type === "loading") {
+        return <div className="p-6 text-sm text-slate-500">불러오는 중...</div>;
+    }
+
+    if (view.type === "queue") {
+        return <EngQueue onSelect={(id) => setView({ type: "detail", asRequestId: id })} />;
+    }
+
+    if (view.type === "detail") {
+        return (
+            <EngDetail
+                asRequestId={view.asRequestId}
+                onBack={() => setView({ type: "queue" })}
+                onAccepted={(assignmentId) => setView({ type: "accepted", assignmentId })}
+            />
+        );
+    }
+
     return (
-      <EngQueue
-        onSelect={(asRequestId) => setView({ type: "detail", asRequestId })}
-      />
+        <EngStatus
+            assignmentId={view.assignmentId}
+            onComplete={() => { /* 리포트 화면 이동 처리 */ }}
+        />
     );
-  }
-
-  if (view.type === "detail") {
-    return (
-      <EngDetail
-        asRequestId={view.asRequestId}
-        onBack={() => setView({ type: "queue" })}
-        onAccepted={(assignmentId) => setView({ type: "accepted", assignmentId })}
-      />
-    );
-  }
-
-  // 수락 완료 화면
-  return (
-    <div className="flex flex-col items-center justify-center h-64 gap-4">
-      <div style={{ fontSize: 32 }}>✅</div>
-      <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>출동 수락 완료</div>
-      <div style={{ fontSize: 13, color: "#64748B" }}>배정 ID: {view.type === "accepted" ? view.assignmentId : ""}</div>
-      <button
-        onClick={() => setView({ type: "queue" })}
-        className="px-5 py-2.5 rounded-lg"
-        style={{ background: "#2563EB", color: "#fff", fontSize: 13, fontWeight: 600 }}
-      >
-        대기열로 돌아가기
-      </button>
-    </div>
-  );
 }

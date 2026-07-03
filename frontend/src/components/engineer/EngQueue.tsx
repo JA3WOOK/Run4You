@@ -10,9 +10,10 @@ const catIcons: Record<string, React.ReactNode> = {
 
 interface Props {
   onSelect: (asRequestId: number) => void;
+  hasActiveAssignment?: boolean;
 }
 
-export function EngQueue({ onSelect }: Props) {
+export function EngQueue({ onSelect, hasActiveAssignment }: Props) {
   const { queue, loading, error, refresh } = useMatchingQueue();
 
   if (loading) return (
@@ -31,7 +32,12 @@ export function EngQueue({ onSelect }: Props) {
   );
 
   return (
-    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
+        {hasActiveAssignment && (
+            <div className="px-4 py-3 rounded-xl" style={{ background: "#FFFBEB", border: "1px solid #FDE68A", color: "#92400E", fontSize: 13 }}>
+              ⚠️ 진행 중인 출동 건이 있어 새 요청을 수락할 수 없습니다. "수리 상태 변경"에서 먼저 완료해주세요.
+            </div>
+        )}
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>

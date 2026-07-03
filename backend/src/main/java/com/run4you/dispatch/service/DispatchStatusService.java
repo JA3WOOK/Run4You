@@ -1,10 +1,7 @@
 package com.run4you.dispatch.service;
 
 import com.run4you.dispatch.domain.DispatchStatus;
-import com.run4you.dispatch.dto.DispatchEventPayload;
-import com.run4you.dispatch.dto.DispatchStatusUpdateRequest;
-import com.run4you.dispatch.dto.DispatchTrackingResponse;
-import com.run4you.dispatch.dto.EngineerLocationPing;
+import com.run4you.dispatch.dto.*;
 import com.run4you.dispatch.entity.DispatchStatusHistory;
 import com.run4you.dispatch.exception.DispatchException;
 import com.run4you.dispatch.port.AssignmentGateway;
@@ -186,5 +183,11 @@ public class DispatchStatusService {
     void onStatusChanged(StatusChangedEvent e) {
         ssePublisher.publish(e.view(), e.payload());                       // 점주 + 관제 스트림
         notificationService.notifyDispatchEvent(e.view(), e.status(), e.payload()); // 점주 알림 영속+push
+    }
+
+    @Transactional(readOnly = true)
+    public List<DispatchHistoryItemResponse> getHistory(Long assignmentId) {
+        return historyRepository.findByAssignmentIdOrderByChangedAtAsc(assignmentId)
+                .stream().map(DispatchHistoryItemResponse::of).toList();
     }
 }
