@@ -343,28 +343,24 @@ export function InProgressAsTable({
                                                         상세 보기
                                                     </button>
                                                     <span style={{ color: "#CBD5E1", fontSize: 12 }}>|</span>
+                                                    <button
+                                                        onClick={() => onViewRequest(r.equipmentId, r.equipmentName)}
+                                                        className="transition-all hover:opacity-70"
+                                                        style={{ fontSize: 12, fontWeight: 700, color: "#475569", background: "transparent", border: "none", padding: 0 }}
+                                                    >
+                                                        접수 내용
+                                                    </button>
                                                 </>
                                             )}
 
-                                            <button
-                                                onClick={() => onViewRequest(r.equipmentId, r.equipmentName)}
-                                                className="transition-all hover:opacity-70"
-                                                style={{ fontSize: 12, fontWeight: 700, color: "#475569", background: "transparent", border: "none", padding: 0 }}
-                                            >
-                                                접수 내용
-                                            </button>
-
                                             {r.currentStatus === "COMPLETED" && (
-                                                <>
-                                                    <span style={{ color: "#CBD5E1", fontSize: 12 }}>|</span>
-                                                    <button
-                                                        onClick={() => onReview?.(r.asRequestId)}
-                                                        className="transition-all hover:opacity-70"
-                                                        style={{ fontSize: 12, fontWeight: 700, color: "#2563EB", background: "transparent", border: "none", padding: 0 }}
-                                                    >
-                                                        엔지니어 평가하기
-                                                    </button>
-                                                </>
+                                                <button
+                                                    onClick={() => onReview?.(r.asRequestId)}
+                                                    className="transition-all hover:opacity-70"
+                                                    style={{ fontSize: 12, fontWeight: 700, color: "#2563EB", background: "transparent", border: "none", padding: 0 }}
+                                                >
+                                                    엔지니어 평가하기
+                                                </button>
                                             )}
                                         </div>
                                     </div>
