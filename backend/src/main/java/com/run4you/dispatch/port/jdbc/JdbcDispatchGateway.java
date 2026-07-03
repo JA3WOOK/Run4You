@@ -95,6 +95,31 @@ public class JdbcDispatchGateway implements AssignmentGateway, LocationGateway, 
                      WHERE a.id = ?
                     """, at, assignmentId);
         }
+
+        // 4) REPAIRING 진입 시 기자재 상태 → REPAIRING (수리 중 표시)
+        //    (② 점주 도메인 소유 테이블이지만, 본 어댑터가 코어 상태 동기화 책임을 이미 지고 있음)
+        if (newStatus == DispatchStatus.REPAIRING) {
+            jdbc.update("""
+                    UPDATE equipment e
+                    JOIN as_requests r ON r.equipment_id = e.id
+                    JOIN assignments a ON a.as_request_id = r.id
+                       SET e.status = 'REPAIRING', e.updated_at = ?
+                     WHERE a.id = ?
+                    """, at, assignmentId);
+        }
+
+        // 5) 종료 상태(완료/취소) 시 기자재 상태 복원 — 정상(OPERATIONAL)으로
+        //    접수 시 FAULTY, 수리 시작 시 REPAIRING 으로 바뀐 뒤 되돌리는 주체가 없어
+        //    수리 끝나도 계속 고장/수리중으로 표시되는 문제를 여기서 해소한다.
+        if (newStatus == DispatchStatus.COMPLETED || newStatus == DispatchStatus.CANCELLED) {
+            jdbc.update("""
+                    UPDATE equipment e
+                    JOIN as_requests r ON r.equipment_id = e.id
+                    JOIN assignments a ON a.as_request_id = r.id
+                       SET e.status = 'OPERATIONAL', e.updated_at = ?
+                     WHERE a.id = ?
+                    """, at, assignmentId);
+        }
     }
 
     /** 출동(미시) 상태 → A/S 접수(거시) 상태 매핑 */

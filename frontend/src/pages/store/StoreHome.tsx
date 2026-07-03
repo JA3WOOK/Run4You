@@ -136,7 +136,9 @@ export function StoreHome({ onRequestAS, onGoReceipts, onTrack, onViewAll, refre
 
     const filtered = allEquipments.filter((eq) => {
         const matchCat = cat === "ALL" || eq.category === cat;
-        const matchStatus = statusFilter === "ALL" || eq.status === statusFilter;
+        const matchStatus =
+            statusFilter === "ALL" ||
+            (statusFilter === "FAULTY" ? (eq.status === "FAULTY" || eq.status === "REPAIRING") : eq.status === statusFilter);
         const keyword = search.trim().toLowerCase();
         const matchSearch =
             keyword === "" ||
@@ -174,8 +176,8 @@ export function StoreHome({ onRequestAS, onGoReceipts, onTrack, onViewAll, refre
         {
             key: "FAULTY" as const,
             title: "고장 장비",
-            sub: "고장 상태로 확인이 필요한 기자재",
-            value: data?.faultyCount ?? 0,
+            sub: "고장 또는 수리 중인 기자재",
+            value: (data?.faultyCount ?? 0) + (data?.repairingCount ?? 0),
             icon: <FileWarning size={20} />,
             color: "#DC2626",
             cta: "고장 장비 보기",
