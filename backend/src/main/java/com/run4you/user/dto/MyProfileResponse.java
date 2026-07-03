@@ -39,7 +39,7 @@ public class MyProfileResponse {
                     .map(EngineerSpecialty::getCategory)
                     .toList();
             this.rating = profile.getRating();
-            this.skillGrade = profile.getSkillGrade();
+            this.skillGrade = profile.getSkillGrade().name();
         } else {
             this.specialties = List.of();
             this.rating = null;

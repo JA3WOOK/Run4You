@@ -1,6 +1,7 @@
 package com.run4you.matching.entity;
 
 import com.run4you.common.enums.AvailabilityStatus;
+import com.run4you.common.enums.SkillGrade;
 import com.run4you.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -68,9 +69,10 @@ public class EngineerProfile {
     private Integer dailyCapacity = 5;
 
     /** 기술 등급 (LMS 필기시험 합격 시 상향 — 확장) */
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private String skillGrade = "BEGINNER";
+    private SkillGrade skillGrade = SkillGrade.BEGINNER;
 
     /** 실시간 위도 — 배정 스코어링 거리 항목 입력값 */
     @Column(precision = 10, scale = 7)
@@ -124,4 +126,7 @@ public class EngineerProfile {
                 && this.currentLatitude != null
                 && this.currentLongitude != null;
     }
+
+    public void upgradeSkillGrade(SkillGrade newGrade) { this.skillGrade = newGrade; }
+
 }

@@ -26,6 +26,10 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { subscribeDispatch } from "./api/dispatch";
 import { getMyNotifications } from "./api/notification";
 import SuperAdminLmsPage from "./pages/SuperAdminLmsPage";
+import EngineerCourseListPage from "./pages/engineer/EngineerCourseListPage";
+import EngineerCourseDetailPage from "./pages/engineer/EngineerCourseDetailPage";
+import EngineerExamPage from "./pages/engineer/EngineerExamPage";
+import EngineerManualPage from "./pages/engineer/EngineerManualPage";
 
 
 const screenLabels: Record<string, string> = {
@@ -37,6 +41,10 @@ const screenLabels: Record<string, string> = {
   "eng-detail": "출동 상세",
   "eng-status": "수리 상태 변경",
   "eng-report": "정비 리포트",
+  "eng-courses": "기술 등급 코스",
+  "eng-course-detail": "코스 상세",
+  "eng-exam": "필기시험",
+  "eng-manuals": "매뉴얼",
   "admin-dashboard": "통합 관제 대시보드",
   "admin-equipment": "기자재 관리",
   "admin-billing": "정산 관리",
@@ -63,6 +71,7 @@ function Dashboard() {
   const [acceptedAssignmentId, setAcceptedAssignmentId] = useState<number | null>(null);
   const [trackAssignmentId, setTrackAssignmentId] = useState<number | null>(null);
   const [trackEngineer, setTrackEngineer] = useState<{ name: string | null; phone: string | null }>({ name: null, phone: null });
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [toasts, setToasts] = useState<ToastView[]>([]);
   const [sseConnected, setSseConnected] = useState(false);
@@ -95,6 +104,7 @@ function Dashboard() {
 
   const handleScreenChange = (s: Screen) => {
     if (s === "eng-queue") setSelectedAsRequestId(null);
+    if (s === "eng-courses") setSelectedCourseId(null);
     setScreen(s);
   };
 
@@ -197,11 +207,62 @@ function Dashboard() {
                 />
             )}
 
+            {/* ── 엔지니어: 교육(LMS) ── */}
+            {screen === "eng-courses" && accessToken && (
+                <EngineerCourseListPage
+                    accessToken={accessToken}
+                    onOpenCourse={(courseId) => {
+                      setSelectedCourseId(courseId);
+                      setScreen("eng-course-detail");
+                    }}
+                />
+            )}
+            {screen === "eng-course-detail" && (
+                selectedCourseId != null && accessToken ? (
+                    <EngineerCourseDetailPage
+                        accessToken={accessToken}
+                        courseId={selectedCourseId}
+                        onBack={() => {
+                          setSelectedCourseId(null);
+                          setScreen("eng-courses");
+                        }}
+                        onOpenExam={(courseId) => {
+                          setSelectedCourseId(courseId);
+                          setScreen("eng-exam");
+                        }}
+                    />
+                ) : (
+                    <div
+                        className="rounded-xl p-8 text-center"
+                        style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--muted-foreground)", fontSize: 14 }}
+                    >
+                      선택된 코스가 없습니다. "기술 등급 코스"에서 먼저 코스를 선택해 주세요.
+                    </div>
+                )
+            )}
+            {screen === "eng-exam" && (
+                selectedCourseId != null && accessToken ? (
+                    <EngineerExamPage
+                        accessToken={accessToken}
+                        courseId={selectedCourseId}
+                        onBack={() => setScreen("eng-course-detail")}
+                    />
+                ) : (
+                    <div
+                        className="rounded-xl p-8 text-center"
+                        style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--muted-foreground)", fontSize: 14 }}
+                    >
+                      선택된 코스가 없습니다. "기술 등급 코스"에서 먼저 코스를 선택해 주세요.
+                    </div>
+                )
+            )}
+            {screen === "eng-manuals" && accessToken && <EngineerManualPage accessToken={accessToken} />}
+
             {/* ── 본사 관리자 ── */}
             {screen === "admin-dashboard" && (
                 <div className="flex flex-col gap-6">
-                    <AdminDispatchControl />
-                    <AdminStats />
+                  <AdminDispatchControl />
+                  <AdminStats />
                 </div>
             )}
             {screen === "admin-billing" && <AdminBilling />}

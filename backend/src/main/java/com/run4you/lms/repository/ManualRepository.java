@@ -9,4 +9,8 @@ import java.util.List;
 public interface ManualRepository extends JpaRepository<Manual, Long> {
     List<Manual> findAllByOrderByManualTypeAscCreatedAtDesc();
     List<Manual> findAllByManualType(ManualType manualType);
+
+    /** 엔지니어 교육 */
+    List<Manual> findByManualType(ManualType manualType);
+    List<Manual> findByManualTypeAndFaultCategory(ManualType manualType, String faultCategory);
 }
