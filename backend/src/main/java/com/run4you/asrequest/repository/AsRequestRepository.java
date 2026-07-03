@@ -109,12 +109,14 @@ public interface AsRequestRepository extends JpaRepository<AsRequest, Long> {
 
     // 매장의 진행 중인 A/S 전체 목록 (대시보드 진행 중 테이블용, 완료/취소 제외 최신순)
     @Query("""
-    SELECT a FROM AsRequest a
-    JOIN FETCH a.equipment
-    WHERE a.store.id = :storeId
-    AND a.status NOT IN ('COMPLETED', 'CANCELLED')
-    ORDER BY a.requestedAt DESC
-    """)
+        SELECT a FROM AsRequest a
+        JOIN FETCH a.equipment
+        LEFT JOIN Review r ON r.asRequest.id = a.id
+        WHERE a.store.id = :storeId
+        AND a.status != 'CANCELLED'
+        AND (a.status != 'COMPLETED' OR r.id IS NULL)
+        ORDER BY a.requestedAt DESC
+        """)
     List<AsRequest> findActiveByStoreId(@Param("storeId") Long storeId);
 
     // 브랜드별 A/S 총 건수 (SUPER_ADMIN 대시보드)

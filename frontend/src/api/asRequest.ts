@@ -91,3 +91,19 @@ export async function cancelAsRequest(
     const res = await api.patch(`/as-requests/${asRequestId}/cancel`, null, { headers: authHeader(token) });
     return res.data.data;
 }
+
+// 엔지니어 평가 등록 요청 (ReviewCreateRequest)
+export interface ReviewCreateRequest {
+    asRequestId: number;
+    rating: number;
+    comment?: string;
+}
+
+// 엔지니어 평가 등록 (POST /api/reviews)
+export async function createReview(
+    token: string,
+    data: ReviewCreateRequest
+): Promise<number> {
+    const res = await api.post('/reviews', data, { headers: authHeader(token) });
+    return res.data.data;
+}

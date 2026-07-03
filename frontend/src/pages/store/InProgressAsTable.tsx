@@ -43,11 +43,11 @@ function getStepIndex(status: DispatchStatusName | null): number {
         status === "DISPATCHED" ||
         status === "ARRIVED"
     ) {
-        return 2; // 배정 완료 ~ 현장 도착까지 전부 "배정" 단계로 취급 (세부 상황은 배지 텍스트로 전달)
+        return 2;
     }
 
     if (status === "REPAIRING") return 3;
-    if (status === "COMPLETED") return 3; // 방어적 처리 (정상적으로는 이 목록에 안 내려옴)
+    if (status === "COMPLETED") return 4;
 
     return 1; // CANCELLED 등
 }
@@ -77,15 +77,14 @@ function statusBadge(status: DispatchStatusName | null, etaMinutes: number | nul
         case "REPAIRING":
             return { text: "수리 진행 중", color: "#B45309", bg: "#FEF6E7" };
         case "COMPLETED":
-            return { text: "수리 완료", color: "#16A34A", bg: "#DCFCE7" };
+            return { text: "수리 완료 · 평가 대기 중", color: "#16A34A", bg: "#DCFCE7" };
         default:
             return { text: "엔지니어 배정 대기 중", color: "#475569", bg: "#E2E8F0" };
     }
 }
 
 // 단계 타임라인
-
-const STEP_LABELS = ["접수", "배정", "수리중"];
+const STEP_LABELS = ["접수", "배정", "수리중", "완료"];
 const COL_WIDTH = 60; // 원/라벨 칸 고정 폭 — 두 행이 동일 구조라 자동 정렬됨
 
 function StepTimeline({ stepIndex, requestedAt }: { stepIndex: number; requestedAt: string }) {
@@ -171,13 +170,13 @@ function StepTimeline({ stepIndex, requestedAt }: { stepIndex: number; requested
 }
 
 // 진행 중인 A/S 테이블
-
 interface InProgressAsTableProps {
     rows: InProgressAsItem[];
     loading: boolean;
     error: string;
     onTrack?: (assignmentId: number | null) => void;
     onViewRequest: (equipmentId: number, equipmentName: string) => void;
+    onReview?: (asRequestId: number) => void;
     onViewAll?: () => void;
     initialLimit?: number;
 }
@@ -188,6 +187,7 @@ export function InProgressAsTable({
                                       error,
                                       onTrack,
                                       onViewRequest,
+                                      onReview,
                                       onViewAll,
                                       initialLimit = 2,
                                   }: InProgressAsTableProps) {
@@ -333,35 +333,35 @@ export function InProgressAsTable({
                                         </span>
 
                                         <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => onTrack?.(r.assignmentId)}
-                                                className="transition-all hover:opacity-70"
-                                                style={{
-                                                    fontSize: 12,
-                                                    fontWeight: 700,
-                                                    color: "#475569",
-                                                    background: "transparent",
-                                                    border: "none",
-                                                    padding: 0,
-                                                }}
-                                            >
-                                                상세 보기
-                                            </button>
-                                            <span style={{ color: "#CBD5E1", fontSize: 12 }}>|</span>
-                                            <button
-                                                onClick={() => onViewRequest(r.equipmentId, r.equipmentName)}
-                                                className="transition-all hover:opacity-70"
-                                                style={{
-                                                    fontSize: 12,
-                                                    fontWeight: 700,
-                                                    color: "#475569",
-                                                    background: "transparent",
-                                                    border: "none",
-                                                    padding: 0,
-                                                }}
-                                            >
-                                                접수 내용
-                                            </button>
+                                            {r.currentStatus !== "COMPLETED" && (
+                                                <>
+                                                    <button
+                                                        onClick={() => onTrack?.(r.assignmentId)}
+                                                        className="transition-all hover:opacity-70"
+                                                        style={{ fontSize: 12, fontWeight: 700, color: "#475569", background: "transparent", border: "none", padding: 0 }}
+                                                    >
+                                                        상세 보기
+                                                    </button>
+                                                    <span style={{ color: "#CBD5E1", fontSize: 12 }}>|</span>
+                                                    <button
+                                                        onClick={() => onViewRequest(r.equipmentId, r.equipmentName)}
+                                                        className="transition-all hover:opacity-70"
+                                                        style={{ fontSize: 12, fontWeight: 700, color: "#475569", background: "transparent", border: "none", padding: 0 }}
+                                                    >
+                                                        접수 내용
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {r.currentStatus === "COMPLETED" && (
+                                                <button
+                                                    onClick={() => onReview?.(r.asRequestId)}
+                                                    className="transition-all hover:opacity-70"
+                                                    style={{ fontSize: 12, fontWeight: 700, color: "#2563EB", background: "transparent", border: "none", padding: 0 }}
+                                                >
+                                                    엔지니어 평가하기
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
