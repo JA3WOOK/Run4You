@@ -57,7 +57,8 @@ public class EquipmentService {
     public EquipmentListResponseDto getEquipmentList(EquipmentSearchDto searchDto){
 
         User user = getCurrentUser();
-        Long storeId = getCurrentStore(user).getId();
+        Store store = getCurrentStore(user);
+        Long storeId = store.getId();
         List<Equipment> equipments;
 
         // 카테고리 필터 + 키워드 검색
@@ -105,6 +106,7 @@ public class EquipmentService {
                 .toList();
 
         return EquipmentListResponseDto.builder()
+                .storeName(store.getName())
                 .totalCount(totalCount)
                 .operationalCount(operationalCount)
                 .faultyCount(faultyCount)

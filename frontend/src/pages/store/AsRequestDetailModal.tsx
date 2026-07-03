@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react";
 import {X, AlertCircle, Zap, CheckCircle} from "lucide-react";
 import {useAuth} from "../../context/AuthContext";
-import {getActiveAsRequestByEquipment} from "../../api/asRequest";
+import {getActiveAsRequestByEquipment, cancelAsRequest} from "../../api/asRequest";
 import type {AsRequestResponse} from "../../api/asRequest";
 
 const statusLabels: Record<string, string> = {
@@ -14,18 +14,22 @@ const statusLabels: Record<string, string> = {
 };
 
 export function AsRequestDetailModal({
-    equipmentId,
-    equipmentName,
-    onClose,
- }: {
+                                         equipmentId,
+                                         equipmentName,
+                                         onClose,
+                                         onCancelled,
+                                     }: {
     equipmentId: number;
     equipmentName: string;
     onClose: () => void;
+    // 취소 성공 시 부모(StoreHome)에서 목록 리페치하도록 알림
+    onCancelled?: () => void;
 }) {
     const {accessToken} = useAuth();
     const [data, setData] = useState<AsRequestResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [canceling, setCanceling] = useState(false);
 
     useEffect(() => {
         if (!accessToken) return;
@@ -41,6 +45,26 @@ export function AsRequestDetailModal({
             })
             .finally(() => setLoading(false));
     }, [accessToken, equipmentId]);
+
+    // 배정 전(RECEIVED)에만 취소 가능 — 백엔드 AsRequest.cancel() 조건과 동일
+    const cancellable = data?.status === "RECEIVED";
+
+    const handleCancel = async () => {
+        if (!accessToken || !data) return;
+        if (!window.confirm("이 접수를 취소하시겠습니까?")) return;
+
+        setCanceling(true);
+        try {
+            await cancelAsRequest(accessToken, data.id);
+            onCancelled?.();
+            onClose();
+        } catch (err) {
+            console.error("A/S 취소 실패:", err);
+            alert("접수 취소에 실패했습니다. 이미 엔지니어가 배정되었을 수 있습니다.");
+        } finally {
+            setCanceling(false);
+        }
+    };
 
     return (
         <div
@@ -131,6 +155,26 @@ export function AsRequestDetailModal({
                                 {new Date(data.requestedAt).toLocaleString("ko-KR")}
                             </span>
                         </div>
+
+                        {/* 취소 — 배정 전(RECEIVED)에만 노출 */}
+                        {cancellable && (
+                            <button
+                                onClick={handleCancel}
+                                disabled={canceling}
+                                className="w-full py-3 rounded-xl transition-all hover:bg-slate-100"
+                                style={{
+                                    background: "transparent",
+                                    color: "#64748B",
+                                    fontSize: 13,
+                                    fontWeight: 600,
+                                    border: "1px solid #E2E8F0",
+                                    cursor: canceling ? "not-allowed" : "pointer",
+                                    opacity: canceling ? 0.6 : 1,
+                                }}
+                            >
+                                {canceling ? "취소 처리 중..." : "접수 취소"}
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

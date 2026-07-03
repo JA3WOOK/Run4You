@@ -46,6 +46,14 @@ public class AsRequest { // 긴급 A/S 접수 마스터 테이블
     @Column(length = 50)
     private String errorCode;
 
+    // AI 예상 원인 서술
+    @Column(length = 500)
+    private String aiCauseDescription;
+
+    // AI 추천 부품 (콤마 구분 문자열)
+    @Column(length = 500)
+    private String aiRecommendedParts;
+
     // 고장 카테고리
     @Column(length = 30)
     private String faultCategory;
@@ -89,9 +97,19 @@ public class AsRequest { // 긴급 A/S 접수 마스터 테이블
 
     /** 접수 취소 */
     public void cancel() {
-        if (this.status == AsStatus.COMPLETED) {
-            throw new IllegalStateException("완료된 접수는 취소할 수 없습니다.");
+        if (this.status != AsStatus.RECEIVED) {
+            throw new IllegalStateException(
+                    "배정 전 상태에서만 취소할 수 있습니다. 현재 상태: " + this.status);
         }
         this.status = AsStatus.CANCELLED;
+    }
+
+    /** AI 분석 결과 반영 — 에러코드 정형화, 예상 원인, 추천 부품 저장 */
+    public void applyAiDiagnosis(String errorCode, String causeDescription, String recommendedParts) {
+        if (this.errorCode == null || this.errorCode.isBlank()) {
+            this.errorCode = errorCode;
+        }
+        this.aiCauseDescription = causeDescription;
+        this.aiRecommendedParts = recommendedParts;
     }
 }

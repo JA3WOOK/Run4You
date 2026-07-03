@@ -10,6 +10,8 @@ export interface MatchingQueueItem {
   storeDistrict: string;
   priority: "EMERGENCY" | "NORMAL";
   errorCode?: string;
+  aiCauseDescription?: string;
+  aiRecommendedParts?: string;
   equipmentType: string;
   equipmentModel: string;
   receivedTime: string;

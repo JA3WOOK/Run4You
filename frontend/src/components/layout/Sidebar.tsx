@@ -8,6 +8,7 @@ export type UserRole = "STORE_OWNER" | "ENGINEER" | "BRAND_ADMIN" | "SUPER_ADMIN
 export type Screen =
     | "store-home" | "store-as-form" | "store-dispatch" | "store-receipt"
     | "eng-queue" | "eng-detail" | "eng-status" | "eng-report"
+    | "eng-courses" | "eng-course-detail" | "eng-exam" | "eng-manuals"
     | "admin-dashboard" | "admin-equipment" | "admin-billing" | "admin-users"
     | "super-dashboard" | "super-brands" | "super-users" | "super-lms"
     | "settings";
@@ -49,6 +50,8 @@ const navItems: Record<UserRole, { label: string; screen: Screen; icon: React.Re
         { label: "출동 상세", screen: "eng-detail", icon: <MapPin size={19} /> },
         { label: "수리 상태 변경", screen: "eng-status", icon: <Wrench size={19} /> },
         { label: "정비 리포트", screen: "eng-report", icon: <FileText size={19} /> },
+        { label: "기술 등급 코스", screen: "eng-courses", icon: <BookOpen size={19} /> },
+        { label: "매뉴얼", screen: "eng-manuals", icon: <FileText size={19} /> },
     ],
     BRAND_ADMIN: [
         { label: "통합 관제 대시보드", screen: "admin-dashboard", icon: <LayoutDashboard size={19} /> },

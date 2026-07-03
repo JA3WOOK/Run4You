@@ -82,3 +82,12 @@ export async function getInProgressAsList(
     const res = await api.get('/as-requests/in-progress', { headers: authHeader(token) });
     return res.data.data;
 }
+
+// A/S 접수 취소 (PATCH /api/as-requests/{asRequestId}/cancel, 배정 전 상태에서만 가능)
+export async function cancelAsRequest(
+    token: string,
+    asRequestId: number
+): Promise<string> {
+    const res = await api.patch(`/as-requests/${asRequestId}/cancel`, null, { headers: authHeader(token) });
+    return res.data.data;
+}
