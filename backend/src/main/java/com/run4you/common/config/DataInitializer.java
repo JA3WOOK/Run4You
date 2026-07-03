@@ -10,6 +10,7 @@ import com.run4you.brand.repository.BrandRepository;
 import com.run4you.common.enums.AssignMethod;
 import com.run4you.common.enums.AvailabilityStatus;
 import com.run4you.common.enums.DispatchStatus;
+import com.run4you.common.enums.SkillGrade;
 import com.run4you.equipment.entity.Equipment;
 import com.run4you.equipment.entity.EquipmentCategory;
 import com.run4you.equipment.entity.EquipmentStatus;
@@ -281,7 +282,7 @@ public class DataInitializer implements ApplicationRunner {
                     .availabilityStatus(AvailabilityStatus.AVAILABLE)
                     .currentLatitude(new BigDecimal("37.5000"))
                     .currentLongitude(new BigDecimal("127.0000"))
-                    .skillGrade("INTERMEDIATE")
+                    .skillGrade(SkillGrade.INTERMEDIATE)
                     .build());
         }
 
@@ -295,7 +296,7 @@ public class DataInitializer implements ApplicationRunner {
                     .availabilityStatus(AvailabilityStatus.AVAILABLE)
                     .currentLatitude(new BigDecimal("37.5600"))
                     .currentLongitude(new BigDecimal("126.9200"))
-                    .skillGrade("BEGINNER")
+                    .skillGrade(SkillGrade.BEGINNER)
                     .build());
         }
 
