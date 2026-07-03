@@ -24,9 +24,9 @@ import { RepairHistoryModal } from "./RepairHistoryModal";
 import { AsRequestDetailModal } from "./AsRequestDetailModal";
 import { InProgressAsTable } from "./InProgressAsTable";
 import { getReceipts } from "../../api/receipt";
+import { ReviewModal } from "./ReviewModal";
 
 // 카테고리 아이콘 / 라벨
-
 const catIcons: Record<string, React.ReactNode> = {
     KIOSK: <Monitor size={18} />,
     ESPRESSO: <Coffee size={18} />,
@@ -73,15 +73,10 @@ export function StoreHome({ onRequestAS, onGoReceipts, onTrack, onViewAll, refre
     const [showForm, setShowForm] = useState(false);
     const [historyTarget, setHistoryTarget] = useState<Equipment | null>(null);
     const [asDetail, setAsDetail] = useState<{ equipmentId: number; equipmentName: string } | null>(null);
+    const [reviewTarget, setReviewTarget] = useState<number | null>(null);
     const [reload, setReload] = useState(0);
     const [doneCount, setDoneCount] = useState<number | null>(null);
     const [showAll, setShowAll] = useState(false);
-
-    // 앱 레벨 SSE 알림이 올 때마다 목록/진행중/완료수 재조회 (새로고침 불필요)
-    useEffect(() => {
-        if (refreshSignal === undefined) return;
-        setReload((v) => v + 1);
-    }, [refreshSignal]);
 
     // 앱 레벨 SSE 알림이 올 때마다 목록/진행중/완료수 재조회 (새로고침 불필요)
     useEffect(() => {
@@ -314,9 +309,9 @@ export function StoreHome({ onRequestAS, onGoReceipts, onTrack, onViewAll, refre
                         const row = inProgress.find((r) => r.assignmentId === assignmentId);
                         onTrack?.(assignmentId, { name: row?.engineerName ?? null, phone: row?.engineerPhone ?? null });
                     }}
-
                     onViewAll={onViewAll}
                     onViewRequest={(equipmentId, equipmentName) => setAsDetail({ equipmentId, equipmentName })}
+                    onReview={(asRequestId) => setReviewTarget(asRequestId)}
                 />
             </div>
 
@@ -514,6 +509,16 @@ export function StoreHome({ onRequestAS, onGoReceipts, onTrack, onViewAll, refre
                     equipmentName={asDetail.equipmentName}
                     onClose={() => setAsDetail(null)}
                     onCancelled={() => setReload((r) => r + 1)}
+                />
+            )}
+            {reviewTarget !== null && (
+                <ReviewModal
+                    asRequestId={reviewTarget}
+                    onClose={() => setReviewTarget(null)}
+                    onSuccess={() => {
+                        setReviewTarget(null);
+                        setReload((r) => r + 1);
+                    }}
                 />
             )}
         </div>
