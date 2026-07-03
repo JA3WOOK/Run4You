@@ -1,9 +1,7 @@
 package com.run4you.dispatch.controller;
 
-import com.run4you.dispatch.dto.DispatchEventPayload;
-import com.run4you.dispatch.dto.DispatchStatusUpdateRequest;
-import com.run4you.dispatch.dto.DispatchTrackingResponse;
-import com.run4you.dispatch.dto.EngineerLocationPing;
+import com.run4you.common.response.ApiResponse;
+import com.run4you.dispatch.dto.*;
 import com.run4you.dispatch.service.DispatchStatusService;
 import com.run4you.dispatch.support.AuthFacade;
 import jakarta.validation.Valid;
@@ -11,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 출동 관제 API.
@@ -55,5 +55,13 @@ public class DispatchStatusController {
         Long requesterId = authFacade.currentUserId();
         return ResponseEntity.ok(
                 dispatchStatusService.getTracking(assignmentId, requesterId));
+    }
+
+    @GetMapping("/{assignmentId}/history")
+    @PreAuthorize("hasRole('ENGINEER')")
+    public ResponseEntity<ApiResponse<List<DispatchHistoryItemResponse>>> getHistory(
+            @PathVariable Long assignmentId
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(dispatchStatusService.getHistory(assignmentId)));
     }
 }

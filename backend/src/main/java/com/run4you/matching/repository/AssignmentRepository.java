@@ -73,4 +73,27 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
             WHERE a.completedAt IS NOT NULL
             """)
     List<Object[]> findCompletedTimesWithBrand();
+
+    /** 엔지니어의 현재 진행 중인 배정 1건 조회 (없으면 empty) — 로그인/새로고침 시 화면 복구용 */
+    @Query("""
+        SELECT a FROM Assignment a
+        JOIN FETCH a.asRequest ar
+        JOIN FETCH ar.equipment
+        WHERE a.engineer.id = :engineerId
+          AND a.status NOT IN ('COMPLETED', 'CANCELLED')
+        ORDER BY a.assignedAt DESC
+        """)
+    List<Assignment> findActiveByEngineerId(@Param("engineerId") Long engineerId);
+
+    /** 리포트 미작성 수리 완료 건 조회 */
+    @Query("""
+        SELECT a FROM Assignment a
+        JOIN FETCH a.asRequest ar
+        JOIN FETCH ar.equipment eq
+        WHERE a.engineer.id = :engineerId
+          AND a.status = 'COMPLETED'
+          AND NOT EXISTS (SELECT 1 FROM RepairReport r WHERE r.assignmentId = a.id)
+        ORDER BY a.completedAt DESC
+        """)
+    List<Assignment> findPendingReportsByEngineerId(@Param("engineerId") Long engineerId);
 }
