@@ -65,6 +65,11 @@ export async function getParts(token: string): Promise<Part[]> {
   return res.data.data;
 }
 
+export async function searchParts(token: string, keyword: string): Promise<Part[]> {
+  const res = await api.get('/parts/search', { headers: authHeader(token), params: { keyword } });
+  return res.data.data;
+}
+
 /** 정비 리포트 작성 (부품 단가 검증 + 비용 합산은 서버에서 처리) */
 export async function createReport(token: string, body: ReportCreateRequest): Promise<ReportResponse> {
   const res = await api.post('/reports', body, { headers: authHeader(token) });

@@ -13,4 +13,6 @@ public interface PartsRepository extends JpaRepository<Parts, Long> {
     List<Parts> findByCategory(String category);
 
     boolean existsByPartCode(String partCode);
+
+    List<Parts> findTop20ByPartCodeContainingIgnoreCaseOrNameContainingIgnoreCaseOrderByPartCode(String partCode, String name);
 }

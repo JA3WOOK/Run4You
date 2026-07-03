@@ -24,6 +24,15 @@ public class PartService {
         return partsRepository.findByCategory(category);
     }
 
+    @Transactional(readOnly = true)
+    public List<Parts> search(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return List.of();
+        }
+        String k = keyword.trim();
+        return partsRepository.findTop20ByPartCodeContainingIgnoreCaseOrNameContainingIgnoreCaseOrderByPartCode(k, k);
+    }
+
     /** 부품 코드로 조회 — 없으면 예외(팀 GlobalExceptionHandler가 400 처리). 리포트 단가 검증에서 사용. */
     @Transactional(readOnly = true)
     public Parts getByCode(String partCode) {

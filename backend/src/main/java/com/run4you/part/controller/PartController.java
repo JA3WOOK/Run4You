@@ -29,4 +29,9 @@ public class PartController {
                 : partService.findByCategory(category);
         return ResponseEntity.ok(ApiResponse.success(parts));
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<Parts>>> search(@RequestParam String keyword) {
+        return ResponseEntity.ok(ApiResponse.success(partService.search(keyword)));
+    }
 }

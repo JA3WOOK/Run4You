@@ -1,13 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Plus, Trash2, CheckCircle, FileText } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { createReport } from "../../api/report";
+import { createReport, searchParts, type Part as MasterPart } from "../../api/report";
 
 interface Part { code: string; name: string; qty: number; price: number }
 
 interface Props {
-  // 보통 "출동 상세(EngDetail)"에서 전달되는 배정 컨텍스트.
-  // 테스트 시에는 App.tsx에서 임시 값으로 넘기면 된다.
   assignmentId?: number;
   asRequestId?: number;
   engineerId?: number;
@@ -15,10 +13,6 @@ interface Props {
   onSubmit?: () => void;
 }
 
-/**
- * 정비 리포트 작성 (피그마 EngReport 디자인 그대로 + 백엔드 API 연결).
- * 제출 시 POST /api/reports 로 보내 서버가 부품 단가 검증·비용 합산을 처리한다.
- */
 export function EngReport({ assignmentId = 0, asRequestId = 0, engineerId = 0, equipmentId = 0, onSubmit }: Props) {
   const { accessToken } = useAuth();
   const draftKey = `report-draft:${assignmentId}`;
@@ -47,6 +41,9 @@ export function EngReport({ assignmentId = 0, asRequestId = 0, engineerId = 0, e
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeRow, setActiveRow] = useState<number | null>(null);
+  const [suggestions, setSuggestions] = useState<MasterPart[]>([]);
+  const searchTimer = useRef<number | undefined>(undefined);
 
   // 입력할 때마다 자동 저장
   useEffect(() => {
@@ -57,6 +54,25 @@ export function EngReport({ assignmentId = 0, asRequestId = 0, engineerId = 0, e
   const removePart = (i: number) => setParts((p) => p.filter((_, idx) => idx !== i));
   const updatePart = (i: number, field: keyof Part, value: string | number) =>
       setParts((p) => p.map((part, idx) => idx === i ? { ...part, [field]: value } : part));
+
+  const onPartInput = (i: number, field: "code" | "name", value: string) => {
+    updatePart(i, field, value);
+    setActiveRow(i);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    const kw = value.trim();
+    if (!kw || !accessToken) { setSuggestions([]); return; }
+    searchTimer.current = window.setTimeout(async () => {
+      try { setSuggestions(await searchParts(accessToken, kw)); } catch { setSuggestions([]); }
+    }, 200);
+  };
+
+  const pickPart = (i: number, part: MasterPart) => {
+    setParts((p) => p.map((row, idx) => idx === i
+      ? { ...row, code: part.partCode, name: part.name, price: part.unitPrice }
+      : row));
+    setSuggestions([]);
+    setActiveRow(null);
+  };
 
   const partsCost = parts.reduce((acc, p) => acc + p.qty * p.price, 0);
   const totalCost = partsCost + Number(labor);
@@ -115,17 +131,21 @@ export function EngReport({ assignmentId = 0, asRequestId = 0, engineerId = 0, e
         </div>
         <div className="flex flex-col gap-3">
           {parts.map((p, i) => (
-            <div key={i} className="grid grid-cols-12 gap-2 items-center">
+            <div key={i} className="relative grid grid-cols-12 gap-2 items-center">
               <input
                 value={p.code}
-                onChange={(e) => updatePart(i, "code", e.target.value)}
+                onChange={(e) => onPartInput(i, "code", e.target.value)}
+                onFocus={() => setActiveRow(i)}
+                onBlur={() => setTimeout(() => setActiveRow((r) => (r === i ? null : r)), 150)}
                 placeholder="부품코드"
                 className="col-span-3 px-3 py-2 rounded-lg"
                 style={{ border: "1px solid rgba(15,23,42,0.1)", fontSize: 12, background: "#F8FAFC", fontFamily: "var(--font-mono)", outline: "none" }}
               />
               <input
                 value={p.name}
-                onChange={(e) => updatePart(i, "name", e.target.value)}
+                onChange={(e) => onPartInput(i, "name", e.target.value)}
+                onFocus={() => setActiveRow(i)}
+                onBlur={() => setTimeout(() => setActiveRow((r) => (r === i ? null : r)), 150)}
                 placeholder="부품명"
                 className="col-span-4 px-3 py-2 rounded-lg"
                 style={{ border: "1px solid rgba(15,23,42,0.1)", fontSize: 12, background: "#F8FAFC", outline: "none" }}
@@ -148,6 +168,26 @@ export function EngReport({ assignmentId = 0, asRequestId = 0, engineerId = 0, e
               <button onClick={() => removePart(i)} className="col-span-1 flex items-center justify-center">
                 <Trash2 size={14} style={{ color: "#EF4444" }} />
               </button>
+
+              {activeRow === i && suggestions.length > 0 && (
+                <div
+                  className="absolute z-20 left-0 right-0 rounded-lg overflow-hidden"
+                  style={{ top: "calc(100% + 4px)", background: "#fff", border: "1px solid rgba(15,23,42,0.12)", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", maxHeight: 220, overflowY: "auto" }}
+                >
+                  {suggestions.map((s) => (
+                    <button
+                      key={s.id}
+                      onMouseDown={(e) => { e.preventDefault(); pickPart(i, s); }}
+                      className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+                      style={{ borderBottom: "1px solid rgba(15,23,42,0.05)" }}
+                    >
+                      <span style={{ fontSize: 12, fontFamily: "var(--font-mono)", color: "#2563EB", minWidth: 96 }}>{s.partCode}</span>
+                      <span style={{ fontSize: 12, color: "#0F172A", flex: 1 }}>{s.name}</span>
+                      <span style={{ fontSize: 12, color: "#64748B" }}>{s.unitPrice.toLocaleString()}원</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
