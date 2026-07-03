@@ -48,6 +48,7 @@ public class MatchingService {
 
     private final ScoringEngine         scoringEngine;
     private final AssignmentLockManager lockManager;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     // ─────────────────────────────────────────────────────────────────
     //  내부 홀더: AS 요청 + 스코어 결과 묶음
@@ -209,6 +210,17 @@ public class MatchingService {
 
             // ⑥ 후보 스코어 로그 저장
             saveScoreLog(req, engineerUser, score, true);
+
+            // ⑦ 배정 확정 이벤트 발행 — 커밋 후(AFTER_COMMIT) 점주/엔지니어/관리자 알림 전송
+            //    (락·트랜잭션 안에서 직접 push 하지 않고 이벤트만 발행해 커밋 원자성 보장)
+            eventPublisher.publishEvent(new com.run4you.matching.event.AssignmentAcceptedEvent(
+                    assignment.getId(),
+                    req.getId(),
+                    engineerUser.getId(),
+                    req.getRequester().getId(),
+                    store.getId(),
+                    store.getBrand() != null ? store.getBrand().getId() : null
+            ));
 
             log.info("[수락] 완료 — assignmentId={}, asRequestId={}, engineerId={}",
                     assignment.getId(), asRequestId, engineerUser.getId());
