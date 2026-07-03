@@ -1,4 +1,4 @@
-import { MapPin, Clock, Zap, Coffee, AlertCircle, Navigation, ArrowLeft, CheckCircle, Sparkles, Check } from "lucide-react";
+import { MapPin, Clock, Zap, Coffee, AlertCircle, Navigation, ArrowLeft, CheckCircle, Sparkles, Check, Stethoscope, Code2, Hammer } from "lucide-react";
 import { useAssignmentDetail } from "../../hooks/useAssignmentDetail";
 
 const SCORE_COLORS = ["#2563EB", "#16A34A", "#7C3AED", "#D97706", "#DC2626"];
@@ -109,63 +109,80 @@ export function EngDetail({ asRequestId, onBack, onAccepted }: Props) {
 
           {/* AI 고장 원인 사전 분석 */}
           {(d.aiCauseDescription || d.errorCode || d.aiRecommendedParts) && (
-              <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(15,23,42,0.08)" }}>
-                {/* 헤더 영역 — 살짝 어두운 배경 */}
-                <div className="flex items-baseline gap-2 flex-wrap p-4" style={{ background: "#F8F9FB" }}>
-                  <Sparkles size={15} style={{ color: "#0F172A" }} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>AI 진단 리포트</span>
-                  <span className="px-2 py-0.5 rounded-full" style={{ background: "#E2E4EA", color: "#475569", fontSize: 10, fontWeight: 700 }}>
-                    BETA
-                  </span>
-                  <span style={{ fontSize: 12, color: "#64748B" }}>
+              <div className="rounded-xl animate-ai-border" style={{ padding: 2, background: "linear-gradient(120deg, #1E3A8A, #7DD3FC, #1E3A8A, #38BDF8)", backgroundSize: "300% 300%" }}>
+                <div className="rounded-xl p-5" style={{ background: "#fff" }}>
+                  {/* 헤더 */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <Sparkles size={20} style={{ color: "#2563EB" }} />
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "#0F172A" }}>AI 진단 리포트</span>
+                    <span className="px-2 py-0.5 rounded-full" style={{ background: "#EFF6FF", color: "#2563EB", fontSize: 10, fontWeight: 700 }}>
+                      BETA
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 12, color: "#64748B", marginLeft: 36, marginBottom: 16 }}>
                     입력된 증상을 분석해 예상 원인과 부품을 추천합니다
-                  </span>
-                </div>
+                  </p>
 
-                {/* 본문 영역 — 흰색 배경 */}
-                <div className="grid grid-cols-3 p-5" style={{ background: "#fff" }}>
-                  {/* 01 예상 원인 */}
-                  <div className="pr-5" style={{ borderRight: "1px solid rgba(15,23,42,0.08)" }}>
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8" }}>01</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A" }}>예상 원인</span>
+                  {/* 3카드 그리드 */}
+                  <div className="grid grid-cols-3 gap-3">
+                    {/* 01 예상 원인 */}
+                    <div className="rounded-xl p-3.5 flex flex-col" style={{ background: "#FAFBFF", border: "1px solid rgba(15,23,42,0.06)", boxShadow: "0 1px 2px rgba(15,23,42,0.04)" }}>
+                      <div className="flex items-center gap-2.5 mb-2.5">
+                        <div className="flex items-center justify-center rounded-xl shrink-0" style={{ width: 40, height: 40, background: "#EFF6FF" }}>
+                          <Stethoscope size={19} style={{ color: "#2563EB" }} />
+                        </div>
+                        <div className="flex flex-col" style={{ gap: 4 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8" }}>01</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>예상 원인</span>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.6 }}>
+                        {d.aiCauseDescription ?? "-"}
+                      </p>
                     </div>
-                    <div style={{ fontSize: 13, color: "#334155", lineHeight: 1.7 }}>
-                      {d.aiCauseDescription ?? "-"}
-                    </div>
-                  </div>
 
-                  {/* 02 추천 에러 코드 */}
-                  <div className="px-5" style={{ borderRight: "1px solid rgba(15,23,42,0.08)" }}>
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8" }}>02</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A" }}>추천 에러 코드</span>
+                    {/* 02 추천 에러 코드 */}
+                    <div className="rounded-xl p-3.5 flex flex-col" style={{ background: "#FAFBFF", border: "1px solid rgba(15,23,42,0.06)", boxShadow: "0 1px 2px rgba(15,23,42,0.04)" }}>
+                      <div className="flex items-center gap-2.5 mb-2.5">
+                        <div className="flex items-center justify-center rounded-xl shrink-0" style={{ width: 40, height: 40, background: "#EFF6FF" }}>
+                          <Code2 size={19} style={{ color: "#2563EB" }} />
+                        </div>
+                        <div className="flex flex-col" style={{ gap: 4 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8" }}>02</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>추천 에러 코드</span>
+                        </div>
+                      </div>
+                      {d.errorCode ? (
+                          <span style={{ fontSize: 16, fontWeight: 900, color: "#2563EB", fontFamily: "monospace", marginLeft: 10 }}>
+                  {d.errorCode}
+                </span>
+                      ) : (
+                          <span style={{ fontSize: 12, color: "#94A3B8", marginLeft: 10 }}>-</span>
+                      )}
                     </div>
-                    {d.errorCode ? (
-                        <span style={{ fontSize: 15, fontWeight: 700, color: "#0F172A", fontFamily: "monospace", letterSpacing: "0.02em" }}>
-                          {d.errorCode}
-                        </span>
-                    ) : (
-                        <span style={{ fontSize: 13, color: "#94A3B8" }}>-</span>
-                    )}
-                  </div>
 
-                  {/* 03 추천 지참 부품 */}
-                  <div className="pl-5">
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8" }}>03</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0F172A" }}>추천 지참 부품</span>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      {d.aiRecommendedParts
-                          ? d.aiRecommendedParts.split(",").map((part, i) => (
-                              <div key={i} className="flex items-center gap-1.5">
-                                <span style={{ fontSize: 12, color: "#334155" }}>✓</span>
-                                <span style={{ fontSize: 13, color: "#0F172A" }}>{part.trim()}</span>
-                              </div>
-                          ))
-                          : <span style={{ fontSize: 13, color: "#94A3B8" }}>-</span>
-                      }
+                    {/* 03 추천 교체 부품 */}
+                    <div className="rounded-xl p-3.5 flex flex-col" style={{ background: "#FAFBFF", border: "1px solid rgba(15,23,42,0.06)", boxShadow: "0 1px 2px rgba(15,23,42,0.04)" }}>
+                      <div className="flex items-center gap-2.5 mb-2.5">
+                        <div className="flex items-center justify-center rounded-xl shrink-0" style={{ width: 40, height: 40, background: "#EFF6FF" }}>
+                          <Hammer size={19} style={{ color: "#2563EB" }} />
+                        </div>
+                        <div className="flex flex-col" style={{ gap: 4 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8" }}>03</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>추천 교체 부품</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1" style={{ paddingLeft: 20 }}>
+                        {d.aiRecommendedParts
+                            ? d.aiRecommendedParts.split(",").map((part, i) => (
+                                <div key={i} className="flex items-center gap-1.5">
+                                  <span className="rounded-full shrink-0" style={{ width: 4, height: 4, background: "#2563EB" }} />
+                                  <span style={{ fontSize: 12, color: "#334155" }}>{part.trim()}</span>
+                                </div>
+                            ))
+                            : <span style={{ fontSize: 12, color: "#94A3B8" }}>-</span>
+                        }
+                      </div>
                     </div>
                   </div>
                 </div>

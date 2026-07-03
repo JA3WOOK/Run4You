@@ -20,3 +20,12 @@ body {
     animation: stepPulse 1.8s ease-out infinite;
 }
 
+@keyframes ai-border-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animate-ai-border {
+    animation: ai-border-flow 4s ease infinite;
+}
