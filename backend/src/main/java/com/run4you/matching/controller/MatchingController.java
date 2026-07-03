@@ -1,6 +1,7 @@
 package com.run4you.matching.controller;
 
 import com.run4you.common.response.ApiResponse;
+import com.run4you.matching.dto.ActiveAssignmentResponse;
 import com.run4you.matching.dto.AssignmentDetailResponse;
 import com.run4you.matching.dto.CandidateScoreResponse;
 import com.run4you.matching.dto.MatchingQueueItemResponse;
@@ -36,6 +37,19 @@ public class MatchingController {
     }
 
     /**
+     로그인 엔지니어의 현재 진행 중인 배정 조회 (로그아웃 후 재접속 시 화면 복구용)
+     GET /api/assignments/my-active
+     */
+    @GetMapping("/my-active")
+    @PreAuthorize("hasRole('ENGINEER')")
+    public ResponseEntity<ApiResponse<ActiveAssignmentResponse>> getMyActiveAssignment(
+            @AuthenticationPrincipal String email
+    ) {
+        ActiveAssignmentResponse active = matchingService.getMyActiveAssignment(email);
+        return ResponseEntity.ok(ApiResponse.success(active));
+    }
+
+    /**
       특정 AS 요청 상세 조회 (수락 전 상세 화면)
       고장 기자재 정보 + 이 엔지니어의 가중치 배정 점수 반환
       GET /api/assignments/requests/{asRequestId}/detail
@@ -57,12 +71,12 @@ public class MatchingController {
      */
     @PostMapping("/requests/{asRequestId}/accept")
     @PreAuthorize("hasRole('ENGINEER')")
-    public ResponseEntity<ApiResponse<Long>> acceptAssignment(
+    public ResponseEntity<ApiResponse<ActiveAssignmentResponse>> acceptAssignment(
             @PathVariable Long asRequestId,
             @AuthenticationPrincipal String email
     ) {
         Assignment assignment = matchingService.acceptAssignment(asRequestId, email);
-        return ResponseEntity.ok(ApiResponse.success(assignment.getId()));
+        return ResponseEntity.ok(ApiResponse.success(ActiveAssignmentResponse.of(assignment)));
     }
 
     /**

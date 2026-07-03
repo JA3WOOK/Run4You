@@ -4,6 +4,7 @@ import com.run4you.asrequest.entity.AsRequest;
 import com.run4you.asrequest.repository.AsRequestRepository;
 import com.run4you.common.enums.AvailabilityStatus;
 import com.run4you.common.exception.*;
+import com.run4you.matching.dto.ActiveAssignmentResponse;
 import com.run4you.matching.dto.AssignmentDetailResponse;
 import com.run4you.matching.dto.CandidateScoreResponse;
 import com.run4you.matching.dto.MatchingQueueItemResponse;
@@ -176,6 +177,11 @@ public class MatchingService {
             var  store           = req.getStore();
             int  activeCount     = assignmentRepository.countActiveByEngineerId(engineerUser.getId());
 
+            // 이미 진행 중인 배정이 있으면 수락 자체를 차단
+            if (activeCount > 0) {
+                throw new AlreadyAssignedException("이미 진행 중인 출동 건이 있어 새로운 요청을 수락할 수 없습니다.");
+            }
+
             // ② 스코어 재계산 (수락 시점 기준)
             ScoreResult score = scoringEngine.score(
                     ep,
@@ -227,6 +233,20 @@ public class MatchingService {
                 .stream()
                 .map(CandidateScoreResponse::from)
                 .toList();
+    }
+
+    /**
+     * 로그인 엔지니어의 현재 진행 중인 배정을 반환한다. 없으면 null.
+     * 로그인/새로고침 시 프런트가 화면을 복구하기 위해 호출.
+     * GET /api/assignments/my-active
+     */
+    public ActiveAssignmentResponse getMyActiveAssignment(String email) {
+        EngineerProfile ep = getEngineerProfile(email);
+        List<Assignment> active = assignmentRepository.findActiveByEngineerId(ep.getUser().getId());
+        if (active.isEmpty()) {
+            return null;
+        }
+        return ActiveAssignmentResponse.of(active.get(0));
     }
 
     // ─────────────────────────────────────────────────────────────────

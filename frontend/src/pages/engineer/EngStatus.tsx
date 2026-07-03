@@ -37,15 +37,19 @@ function getCoords(): Promise<{ latitude: number; longitude: number } | null> {
 }
 
 // assignmentId: 수락(accept) 응답으로 받은 배정 ID. 상위(배정 상세)에서 내려준다.
-export function EngStatus({
-                              assignmentId,
-                              onComplete,
-                          }: {
-    assignmentId: number;
-    onComplete: () => void;
-}) {
-    const { accessToken } = useAuth();
-    const [stage, setStage] = useState<Stage>(0);
+    export function EngStatus({
+                                  assignmentId,
+                                  initialStatus,
+                                  onComplete,
+                              }: {
+        assignmentId: number;
+        initialStatus?: string; // "ACCEPTED" | "DISPATCHED" | "ARRIVED" | "REPAIRING" | "COMPLETED"
+        onComplete: () => void;
+    }) {
+        const { accessToken } = useAuth();
+        const [stage, setStage] = useState<Stage>(
+            () => STATUS_TO_STAGE[initialStatus ?? "ACCEPTED"] ?? 0
+        );
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
     const [times, setTimes] = useState<Record<number, string>>({}); // stage → changedAt(HH:mm)

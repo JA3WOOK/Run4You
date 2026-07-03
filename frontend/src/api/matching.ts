@@ -38,6 +38,7 @@ export interface AssignmentDetail {
   priority: "EMERGENCY" | "NORMAL";
   symptom: string;
   errorCode?: string;
+  equipmentId: number;
   equipmentName: string;
   serialNumber: string;
   purchasedDate: string;
@@ -57,6 +58,21 @@ export interface AssignmentDetail {
   distanceKm: number;
   etaMinutes: number;
   trafficCondition: string;
+}
+
+export interface ActiveAssignment {
+  assignmentId: number;
+  asRequestId: number;
+  equipmentId: number;
+  status: string;
+}
+
+export interface AcceptResult {
+    assignmentId: number;
+    asRequestId: number;
+    equipmentId: number;
+    engineerId: number;
+    status: string;
 }
 
 // ─── API 호출 ─────────────────────────────────────────────────────
@@ -88,16 +104,30 @@ export async function fetchRequestDetail(asRequestId: number, token: string | nu
 }
 
 /** 수락 — POST /api/assignments/requests/{id}/accept */
-export async function acceptAssignment(asRequestId: number, token: string | null): Promise<number> {
+export async function acceptAssignment(asRequestId: number, token: string | null): Promise<AcceptResult> {
   const res = await fetch(`${BASE_URL}/api/assignments/requests/${asRequestId}/accept`, {
     method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    let message = "수락 처리 실패";
+    try { message = (await res.json()).message ?? message; } catch {}
+    throw new Error(message);
+  }
+  const body = await res.json();
+  return body.data; // { assignmentId, asRequestId, equipmentId, engineerId, status }
+}
+
+/** 내 활성 배정 조회 — GET /api/assignments/my-active */
+export async function fetchMyActiveAssignment(token: string | null): Promise<ActiveAssignment | null> {
+  const res = await fetch(`${BASE_URL}/api/assignments/my-active`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
-  if (res.status === 409) throw new Error("이미 다른 엔지니어가 수락했습니다.");
-  if (!res.ok) throw new Error("수락 처리 실패");
+  if (res.status === 204) return null;
+  if (!res.ok) throw new Error("현재 배정 조회 실패");
   const body = await res.json();
-  return body.data; // assignmentId
+  return body.data; // null 또는 { assignmentId, asRequestId, status }
 }

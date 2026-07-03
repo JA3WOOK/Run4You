@@ -29,6 +29,7 @@ public class AssignmentDetailResponse {
     private String aiRecommendedParts;
 
     // ─── 기자재 정보 ─────────────────────────────────────────────
+    private Long equipmentId;
     private String equipmentName;
     private String serialNumber;
     private String purchasedDate;       // purchasedAt (구매일)
@@ -73,6 +74,7 @@ public class AssignmentDetailResponse {
                 .aiCauseDescription(req.getAiCauseDescription())
                 .aiRecommendedParts(req.getAiRecommendedParts())
                 // 기자재
+                .equipmentId(req.getEquipment().getId())
                 .equipmentName(equipment.getName())
                 .serialNumber(equipment.getSerialNo())
                 .purchasedDate(equipment.getPurchasedAt() != null ? equipment.getPurchasedAt().format(dateFormat) : "-")
