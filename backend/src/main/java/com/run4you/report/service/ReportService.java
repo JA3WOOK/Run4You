@@ -1,13 +1,17 @@
 package com.run4you.report.service;
 
+import com.run4you.asrequest.entity.AsRequest;
+import com.run4you.asrequest.repository.AsRequestRepository;
 import com.run4you.part.entity.Parts;
 import com.run4you.part.service.PartService;
 import com.run4you.report.dto.PartLineRequest;
+import com.run4you.report.dto.ReportContextResponse;
 import com.run4you.report.dto.ReportCreateRequest;
 import com.run4you.report.dto.ReportResponse;
 import com.run4you.report.entity.RepairReport;
 import com.run4you.report.entity.RepairReportParts;
 import com.run4you.report.repository.RepairReportRepository;
+import com.run4you.store.entity.Store;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +30,23 @@ public class ReportService {
 
     private final RepairReportRepository reportRepository;
     private final PartService partService;
+    private final AsRequestRepository asRequestRepository;
+
+    @Transactional(readOnly = true)
+    public ReportContextResponse getContext(Long asRequestId) {
+        AsRequest asRequest = asRequestRepository.findById(asRequestId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 접수입니다: " + asRequestId));
+        Store store = asRequest.getStore();
+        return new ReportContextResponse(
+                asRequest.getId(),
+                store != null ? store.getName() : null,
+                store != null && store.getOwner() != null ? store.getOwner().getName() : null,
+                store != null ? store.getAddress() : null,
+                asRequest.getEquipment() != null ? asRequest.getEquipment().getName() : null,
+                asRequest.getSymptom(),
+                asRequest.getErrorCode()
+        );
+    }
 
     @Transactional
     public ReportResponse createReport(ReportCreateRequest req) {
