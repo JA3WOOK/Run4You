@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import TrainingStatusPanel from '../components/super/TrainingStatusPanel';
 import { BookOpen, FileText, Plus, Pencil, Trash2, ChevronDown, ChevronRight, X, Check, ClipboardCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -29,7 +30,7 @@ const selectStyle = { ...inputStyle };
 
 const EMPTY_QUESTION_FORM = { question: '', choices: ['', '', '', ''], answer: '1', score: '10' };
 
-type Tab = 'courses' | 'manuals';
+type Tab = 'courses' | 'manuals' | 'status';
 
 export default function SuperAdminLmsPage() {
   const { accessToken } = useAuth();
@@ -305,7 +306,7 @@ export default function SuperAdminLmsPage() {
 
         {/* 탭 */}
         <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'var(--muted)', width: 'fit-content' }}>
-          {(['courses', 'manuals'] as Tab[]).map(t => (
+          {(['courses', 'manuals', 'status'] as Tab[]).map(t => (
               <button key={t} onClick={() => setTab(t)} className="px-5 py-2 rounded-md transition-all"
                       style={{
                         fontSize: 14, fontWeight: tab === t ? 600 : 400,
@@ -313,7 +314,7 @@ export default function SuperAdminLmsPage() {
                         color: tab === t ? 'var(--foreground)' : 'var(--muted-foreground)',
                         boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', cursor: 'pointer',
                       }}>
-                {t === 'courses' ? '코스' : '매뉴얼'}
+                {t === 'courses' ? '코스' : t === 'manuals' ? '매뉴얼' : '이수 현황'}
               </button>
           ))}
         </div>
@@ -756,6 +757,9 @@ export default function SuperAdminLmsPage() {
               )}
             </div>
         )}
+
+        {/* 이수 현황 탭 */}
+        {tab === 'status' && <TrainingStatusPanel />}
       </div>
   );
 }
