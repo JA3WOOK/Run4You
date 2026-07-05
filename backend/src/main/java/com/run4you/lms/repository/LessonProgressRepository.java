@@ -1,6 +1,6 @@
-package com.run4you.education.repository;
+package com.run4you.lms.repository;
 
-import com.run4you.education.entity.LessonProgress;
+import com.run4you.lms.entity.LessonProgress;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

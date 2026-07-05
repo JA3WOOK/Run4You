@@ -1,3 +1,4 @@
+// src/components/engineer/education/CourseCard.tsx
 import type { CourseListItem } from "../../../api/education";
 import ProgressBar from "./ProgressBar";
 import GradeBadge from "./GradeBadge";

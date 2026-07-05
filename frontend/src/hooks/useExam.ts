@@ -1,3 +1,4 @@
+// src/hooks/useExam.ts
 import { useEffect, useState, useCallback } from "react";
 import { fetchExam, submitExam } from "../api/education";
 import type { Exam, ExamResult } from "../api/education";

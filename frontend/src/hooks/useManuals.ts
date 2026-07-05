@@ -1,3 +1,4 @@
+// src/hooks/useManuals.ts
 import { useEffect, useState } from "react";
 import { fetchManuals } from "../api/education";
 import type { Manual, ManualType } from "../api/education";

@@ -1,6 +1,6 @@
-package com.run4you.education.repository;
+package com.run4you.lms.repository;
 
-import com.run4you.education.entity.Exam;
+import com.run4you.lms.entity.Exam;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -17,14 +17,14 @@ import java.util.List;
 /**
  * 엔지니어 교육(LMS) API
  *
- * GET  /api/engineer/courses                       — 코스 목록 (등급 필터, 내 진도율 포함)
+ * GET  /api/engineer/courses                      — 코스 목록 (등급 필터, 내 진도율 포함)
  * GET  /api/engineer/courses/{courseId}            — 코스 상세 (차시 목록 + 내 진도, 자동 수강신청)
  * POST /api/engineer/lessons/{lessonId}/progress   — 차시 시청 진도 갱신
  * GET  /api/engineer/courses/{courseId}/exam       — 시험 문항 조회 (진도율 100% 게이트)
  * POST /api/engineer/exams/{examId}/submit         — 시험 제출/채점 (합격 시 등급 상향)
  * GET  /api/engineer/manuals                       — 매뉴얼 목록 조회
  *
- *
+ * 인증: JwtAuthenticationFilter가 principal에 이메일(String)을 저장하는 기존 컨벤션을 따른다.
  */
 @RestController
 @RequestMapping("/api/engineer")

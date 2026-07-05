@@ -1,3 +1,4 @@
+// src/components/engineer/education/ExamQuiz.tsx
 import { useState } from "react";
 import type { Exam, ExamResult } from "../../../api/education";
 

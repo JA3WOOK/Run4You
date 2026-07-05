@@ -109,4 +109,56 @@ public class LmsController {
         lmsService.deleteManual(id);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    // ── 시험 ──
+    // 코스 1개당 시험 1개(1:1), 시험 하나에 문항 여러 개.
+    // 정답(answer)을 포함해서 내려주므로 이 API들은 전부 관리자 권한으로 제한한다.
+
+    @GetMapping("/courses/{courseId}/exam")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRAND_ADMIN')")
+    public ResponseEntity<ApiResponse<ExamResponse>> getExamByCourse(@PathVariable Long courseId) {
+        return ResponseEntity.ok(ApiResponse.success(lmsService.getExamByCourse(courseId)));
+    }
+
+    @PostMapping("/courses/{courseId}/exam")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRAND_ADMIN')")
+    public ResponseEntity<ApiResponse<ExamResponse>> createExam(
+            @PathVariable Long courseId, @Valid @RequestBody ExamRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(lmsService.createExam(courseId, request)));
+    }
+
+    @PutMapping("/exams/{examId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRAND_ADMIN')")
+    public ResponseEntity<ApiResponse<ExamResponse>> updateExam(
+            @PathVariable Long examId, @Valid @RequestBody ExamRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(lmsService.updateExam(examId, request)));
+    }
+
+    @DeleteMapping("/exams/{examId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRAND_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteExam(@PathVariable Long examId) {
+        lmsService.deleteExam(examId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PostMapping("/exams/{examId}/questions")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRAND_ADMIN')")
+    public ResponseEntity<ApiResponse<ExamQuestionResponse>> addQuestion(
+            @PathVariable Long examId, @Valid @RequestBody ExamQuestionRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(lmsService.addQuestion(examId, request)));
+    }
+
+    @PutMapping("/questions/{questionId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRAND_ADMIN')")
+    public ResponseEntity<ApiResponse<ExamQuestionResponse>> updateQuestion(
+            @PathVariable Long questionId, @Valid @RequestBody ExamQuestionRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(lmsService.updateQuestion(questionId, request)));
+    }
+
+    @DeleteMapping("/questions/{questionId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRAND_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteQuestion(@PathVariable Long questionId) {
+        lmsService.deleteQuestion(questionId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

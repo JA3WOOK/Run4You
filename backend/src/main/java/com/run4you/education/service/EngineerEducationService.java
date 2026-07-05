@@ -4,16 +4,8 @@ import com.run4you.common.enums.EnrollmentStatus;
 import com.run4you.common.enums.SkillGrade;
 import com.run4you.common.exception.*;
 import com.run4you.education.dto.*;
-import com.run4you.education.entity.*;
-import com.run4you.education.repository.*;
-import com.run4you.lms.entity.Course;
-import com.run4you.lms.entity.CourseLevel;
-import com.run4you.lms.entity.Lesson;
-import com.run4you.lms.entity.Manual;
-import com.run4you.lms.entity.ManualType;
-import com.run4you.lms.repository.CourseRepository;
-import com.run4you.lms.repository.LessonRepository;
-import com.run4you.lms.repository.ManualRepository;
+import com.run4you.lms.entity.*;
+import com.run4you.lms.repository.*;
 import com.run4you.matching.entity.EngineerProfile;
 import com.run4you.matching.repository.EngineerProfileRepository;
 import com.run4you.user.entity.User;
@@ -30,7 +22,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 필드 매핑 :
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  엔지니어 교육(LMS) 서비스                                          │
+ * │  - Course/Lesson/Manual 은 com.run4you.lms.entity의 기존 엔티티를    │
+ * │    그대로 사용한다 (관리자 등록 기능과 동일 테이블).                 │
+ * │  - Enrollment/LessonProgress/Exam/ExamQuestion/ExamAttempt 는        │
+ * │    엔지니어 수강 기능을 위해 이번에 새로 추가한 엔티티.              │
+ * └──────────────────────────────────────────────────────────────────────┘
+ *
+ * 필드 매핑 메모:
  *  - Course.grade   : String, 표시용 등급명 (예: "초급") — 그대로 응답에 노출
  *  - Course.level   : CourseLevel enum(BEGINNER/INTERMEDIATE/ADVANCED) — 필터링 & 등급 상향 판단
  *  - Course.passScore : Integer — 시험 합격 기준 점수 (Exam에는 별도로 두지 않음)

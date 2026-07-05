@@ -1,6 +1,5 @@
-package com.run4you.education.entity;
+package com.run4you.lms.entity;
 
-import com.run4you.lms.entity.Lesson;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,7 +7,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
-/** 차시별 진도 기록 */
+/** 차시별 진도 기록 (ERD 8-5. lesson_progress) — UK(enrollment_id, lesson_id) */
 @Entity
 @Table(name = "lesson_progress", uniqueConstraints = {
         @UniqueConstraint(name = "uk_progress_enrollment_lesson", columnNames = {"enrollment_id", "lesson_id"})
