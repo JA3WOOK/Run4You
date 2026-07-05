@@ -24,6 +24,8 @@ export interface Lesson {
   courseId: number;
   title: string;
   content: string | null;
+  videoUrl: string | null;
+  durationSeconds: number;
   orderIndex: number;
   createdAt: string;
   updatedAt: string;
@@ -37,6 +39,22 @@ export interface Manual {
   faultCategory: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ExamQuestion {
+  id: number;
+  question: string;
+  choices: string[];
+  answer: string;             // 정답 보기 번호 (예: "2")
+  score: number;
+}
+
+export interface Exam {
+  id: number;
+  courseId: number;
+  title: string;
+  passScore: number | null;   // Course.passScore
+  questions: ExamQuestion[];
 }
 
 // 코스
@@ -65,21 +83,21 @@ export async function deleteCourse(token: string, id: number): Promise<void> {
   await api.delete(`/lms/courses/${id}`, { headers: authHeader(token) });
 }
 
-// 차시
+// 차시 (동영상 교육)
 export async function getLessons(token: string, courseId: number): Promise<Lesson[]> {
   const res = await api.get(`/lms/courses/${courseId}/lessons`, { headers: authHeader(token) });
   return res.data.data;
 }
 
 export async function createLesson(token: string, courseId: number, data: {
-  title: string; content?: string; orderIndex: number;
+  title: string; content?: string; videoUrl?: string; durationSeconds?: number; orderIndex: number;
 }): Promise<Lesson> {
   const res = await api.post(`/lms/courses/${courseId}/lessons`, data, { headers: authHeader(token) });
   return res.data.data;
 }
 
 export async function updateLesson(token: string, lessonId: number, data: {
-  title: string; content?: string; orderIndex: number;
+  title: string; content?: string; videoUrl?: string; durationSeconds?: number; orderIndex: number;
 }): Promise<Lesson> {
   const res = await api.put(`/lms/lessons/${lessonId}`, data, { headers: authHeader(token) });
   return res.data.data;
@@ -111,4 +129,46 @@ export async function updateManual(token: string, id: number, data: {
 
 export async function deleteManual(token: string, id: number): Promise<void> {
   await api.delete(`/lms/manuals/${id}`, { headers: authHeader(token) });
+}
+
+// 시험 (코스당 1개) / 문항
+export async function getExamByCourse(token: string, courseId: number): Promise<Exam | null> {
+  const res = await api.get(`/lms/courses/${courseId}/exam`, { headers: authHeader(token) });
+  return res.data.data;
+}
+
+export async function createExam(token: string, courseId: number, data: {
+  title: string;
+}): Promise<Exam> {
+  const res = await api.post(`/lms/courses/${courseId}/exam`, data, { headers: authHeader(token) });
+  return res.data.data;
+}
+
+export async function updateExam(token: string, examId: number, data: {
+  title: string;
+}): Promise<Exam> {
+  const res = await api.put(`/lms/exams/${examId}`, data, { headers: authHeader(token) });
+  return res.data.data;
+}
+
+export async function deleteExam(token: string, examId: number): Promise<void> {
+  await api.delete(`/lms/exams/${examId}`, { headers: authHeader(token) });
+}
+
+export async function addExamQuestion(token: string, examId: number, data: {
+  question: string; choices: string[]; answer: string; score: number;
+}): Promise<ExamQuestion> {
+  const res = await api.post(`/lms/exams/${examId}/questions`, data, { headers: authHeader(token) });
+  return res.data.data;
+}
+
+export async function updateExamQuestion(token: string, questionId: number, data: {
+  question: string; choices: string[]; answer: string; score: number;
+}): Promise<ExamQuestion> {
+  const res = await api.put(`/lms/questions/${questionId}`, data, { headers: authHeader(token) });
+  return res.data.data;
+}
+
+export async function deleteExamQuestion(token: string, questionId: number): Promise<void> {
+  await api.delete(`/lms/questions/${questionId}`, { headers: authHeader(token) });
 }

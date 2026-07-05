@@ -13,7 +13,7 @@ public class LessonResponse {
     private String videoUrl;
     private Integer durationSeconds;
     private Integer sortOrder;
-    private String content;
+    private String content;         // Lesson.content (보조 텍스트 가이드)
     private Integer watchedSeconds;
     private BigDecimal progressRate;
     private boolean completed;

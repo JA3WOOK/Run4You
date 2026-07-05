@@ -1,4 +1,4 @@
-package com.run4you.education.entity;
+package com.run4you.lms.entity;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,6 +1,5 @@
-package com.run4you.education.entity;
+package com.run4you.lms.entity;
 
-import com.run4you.lms.entity.Course;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,8 +8,8 @@ import java.util.List;
 
 /**
  * 코스 필기시험 — courses : exams = 1:1
- * ※ 합격 기준 점수는 별도로 두지 않고 Course.passScore를 그대로 사용.
- *
+ * ※ 합격 기준 점수는 별도로 두지 않고 Course.passScore를 그대로 사용한다.
+ *   (lms.entity.Course에 이미 passScore 필드가 있으므로 중복을 피함)
  */
 @Entity
 @Table(name = "exams")
@@ -34,4 +33,10 @@ public class Exam {
     @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ExamQuestion> questions = new ArrayList<>();
+
+    public void updateTitle(String title) {
+        if (title != null && !title.isBlank()) {
+            this.title = title;
+        }
+    }
 }

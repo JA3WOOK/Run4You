@@ -1,3 +1,4 @@
+// src/hooks/useCourses.ts
 import { useEffect, useState, useCallback } from "react";
 import { fetchCourses } from "../api/education";
 import type { CourseListItem, CourseLevel } from "../api/education";

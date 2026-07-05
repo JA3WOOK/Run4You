@@ -1,4 +1,4 @@
-package com.run4you.education.entity;
+package com.run4you.lms.entity;
 
 import com.run4you.user.entity.User;
 import jakarta.persistence.*;
@@ -6,7 +6,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/** 시험 응시 이력  */
+/** 시험 응시 이력 (ERD 8-6. exam_attempts) */
 @Entity
 @Table(name = "exam_attempts")
 @Getter

@@ -10,7 +10,6 @@ public class CourseRequest {
     @NotBlank
     private String title;
     private String description;
-    @NotBlank
     private String grade;
     private String category;
     @NotNull

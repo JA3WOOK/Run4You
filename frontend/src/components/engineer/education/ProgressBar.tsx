@@ -1,3 +1,4 @@
+// src/components/engineer/education/ProgressBar.tsx
 interface Props {
   rate: number; // 0~100
   height?: number;

@@ -1,6 +1,6 @@
-package com.run4you.education.repository;
+package com.run4you.lms.repository;
 
-import com.run4you.education.entity.Enrollment;
+import com.run4you.lms.entity.Enrollment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

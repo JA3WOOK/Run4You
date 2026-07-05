@@ -1,3 +1,4 @@
+// src/pages/engineer/EngineerCourseDetailPage.tsx
 import { useState, useEffect } from "react";
 import { useCourseDetail } from "../../hooks/useCourseDetail";
 import LessonList from "../../components/engineer/education/LessonList";

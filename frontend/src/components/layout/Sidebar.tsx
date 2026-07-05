@@ -58,6 +58,7 @@ const navItems: Record<UserRole, { label: string; screen: Screen; icon: React.Re
         { label: "기자재 관리", screen: "admin-equipment", icon: <Package size={19} /> },
         { label: "정산 관리", screen: "admin-billing", icon: <CreditCard size={19} /> },
         { label: "회원 승인 관리", screen: "admin-users", icon: <Users size={19} /> },
+        { label: "교육 콘텐츠 관리", screen: "super-lms", icon: <BookOpen size={19} /> },
     ],
     SUPER_ADMIN: [
         { label: "전체 통계 대시보드", screen: "super-dashboard", icon: <BarChart3 size={19} /> },

@@ -1,3 +1,4 @@
+// src/components/engineer/education/GradeBadge.tsx
 import type { CourseLevel } from "../../../api/education";
 
 const LABEL: Record<CourseLevel, string> = {

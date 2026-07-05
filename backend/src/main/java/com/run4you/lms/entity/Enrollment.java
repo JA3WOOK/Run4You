@@ -1,7 +1,6 @@
-package com.run4you.education.entity;
+package com.run4you.lms.entity;
 
 import com.run4you.common.enums.EnrollmentStatus;
-import com.run4you.lms.entity.Course;
 import com.run4you.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +8,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/** 엔지니어 수강·진도율  */
+/** 엔지니어 수강·진도율 (ERD 8-4. enrollments) — UK(engineer_id, course_id) */
 @Entity
 @Table(name = "enrollments", uniqueConstraints = {
         @UniqueConstraint(name = "uk_enrollment_engineer_course", columnNames = {"engineer_id", "course_id"})

@@ -1,4 +1,4 @@
-package com.run4you.education.entity;
+package com.run4you.lms.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,7 +26,7 @@ public class ExamQuestion {
     private String question;
 
     /** 보기 목록 (JSON 배열 컬럼 <-> List<String> 변환) */
-    @Convert(converter = com.run4you.education.entity.StringListJsonConverter.class)
+    @Convert(converter = StringListJsonConverter.class)
     @Column(nullable = false, columnDefinition = "JSON")
     private List<String> choices;
 
@@ -35,4 +35,11 @@ public class ExamQuestion {
 
     @Column(nullable = false)
     private Integer score;
+
+    public void update(String question, List<String> choices, String answer, Integer score) {
+        if (question != null && !question.isBlank()) this.question = question;
+        if (choices != null && !choices.isEmpty()) this.choices = choices;
+        if (answer != null && !answer.isBlank()) this.answer = answer;
+        if (score != null) this.score = score;
+    }
 }

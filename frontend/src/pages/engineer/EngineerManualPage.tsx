@@ -1,3 +1,4 @@
+// src/pages/engineer/EngineerManualPage.tsx
 import { useState } from "react";
 import { useManuals } from "../../hooks/useManuals";
 import type { Manual, ManualType } from "../../api/education";
@@ -98,7 +99,7 @@ export default function EngineerManualPage({ accessToken }: Props) {
               <ManualTag manual={m} />
             </div>
             {open && (
-              <div style={{ marginTop: 10, fontSize: 13, color: "#0F172A", lineHeight: 1.7, whiteSpace: "pre-line" }}>
+              <div style={{ marginTop: 10, fontSize: 13, color: "#CBD5E1", lineHeight: 1.7, whiteSpace: "pre-line" }}>
                 {m.content}
               </div>
             )}
