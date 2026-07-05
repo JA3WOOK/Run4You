@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Trash2, CheckCircle, FileText } from "lucide-react";
+import { Plus, Trash2, CheckCircle, FileText, Store, MapPin, AlertCircle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { createReport, searchParts, type Part as MasterPart } from "../../api/report";
+import { createReport, searchParts, getReportContext, type Part as MasterPart, type ReportContext } from "../../api/report";
 
 interface Part { code: string; name: string; qty: number; price: number }
 
@@ -44,6 +44,12 @@ export function EngReport({ assignmentId = 0, asRequestId = 0, engineerId = 0, e
   const [activeRow, setActiveRow] = useState<number | null>(null);
   const [suggestions, setSuggestions] = useState<MasterPart[]>([]);
   const searchTimer = useRef<number | undefined>(undefined);
+  const [ctx, setCtx] = useState<ReportContext | null>(null);
+
+  useEffect(() => {
+    if (!accessToken || !asRequestId) return;
+    getReportContext(accessToken, asRequestId).then(setCtx).catch(() => setCtx(null));
+  }, [accessToken, asRequestId]);
 
   // 입력할 때마다 자동 저장
   useEffect(() => {
@@ -120,6 +126,34 @@ export function EngReport({ assignmentId = 0, asRequestId = 0, engineerId = 0, e
         <FileText size={16} style={{ color: "#64748B" }} />
         <h1 style={{ color: "#0F172A", letterSpacing: "-0.02em" }}>정비 리포트 작성</h1>
       </div>
+
+      {ctx && (
+        <div className="rounded-xl p-4" style={{ background: "#F8FAFC", border: "1px solid rgba(15,23,42,0.08)" }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Store size={14} style={{ color: "#2563EB" }} />
+            <h3 style={{ color: "#0F172A", fontSize: 14 }}>{ctx.storeName ?? "매장 정보"}</h3>
+            {ctx.ownerName && <span style={{ fontSize: 12, color: "#64748B" }}>· 점주 {ctx.ownerName}</span>}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {ctx.storeAddress && (
+              <div className="flex items-center gap-1.5" style={{ fontSize: 12, color: "#475569" }}>
+                <MapPin size={12} style={{ color: "#94A3B8" }} /> {ctx.storeAddress}
+              </div>
+            )}
+            {ctx.equipmentName && (
+              <div className="flex items-center gap-1.5" style={{ fontSize: 12, color: "#475569" }}>
+                <FileText size={12} style={{ color: "#94A3B8" }} /> {ctx.equipmentName}
+                {ctx.errorCode && <span style={{ fontFamily: "var(--font-mono)", color: "#64748B" }}>({ctx.errorCode})</span>}
+              </div>
+            )}
+            {ctx.symptom && (
+              <div className="flex items-start gap-1.5" style={{ fontSize: 12, color: "#DC2626" }}>
+                <AlertCircle size={12} style={{ color: "#DC2626", marginTop: 2 }} /> 증상: {ctx.symptom}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Parts */}
       <div className="rounded-xl p-5" style={{ background: "#fff", border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>

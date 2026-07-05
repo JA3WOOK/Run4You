@@ -1,6 +1,7 @@
 package com.run4you.report.controller;
 
 import com.run4you.common.response.ApiResponse;
+import com.run4you.report.dto.ReportContextResponse;
 import com.run4you.report.dto.ReportCreateRequest;
 import com.run4you.report.dto.ReportResponse;
 import com.run4you.report.service.ReportService;
@@ -40,5 +41,10 @@ public class ReportController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ReportResponse>> detail(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(reportService.getReport(id)));
+    }
+
+    @GetMapping("/context/{asRequestId}")
+    public ResponseEntity<ApiResponse<ReportContextResponse>> context(@PathVariable Long asRequestId) {
+        return ResponseEntity.ok(ApiResponse.success(reportService.getContext(asRequestId)));
     }
 }

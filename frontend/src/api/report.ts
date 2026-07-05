@@ -70,6 +70,21 @@ export async function searchParts(token: string, keyword: string): Promise<Part[
   return res.data.data;
 }
 
+export interface ReportContext {
+  asRequestId: number;
+  storeName: string | null;
+  ownerName: string | null;
+  storeAddress: string | null;
+  equipmentName: string | null;
+  symptom: string | null;
+  errorCode: string | null;
+}
+
+export async function getReportContext(token: string, asRequestId: number): Promise<ReportContext> {
+  const res = await api.get(`/reports/context/${asRequestId}`, { headers: authHeader(token) });
+  return res.data.data;
+}
+
 /** 정비 리포트 작성 (부품 단가 검증 + 비용 합산은 서버에서 처리) */
 export async function createReport(token: string, body: ReportCreateRequest): Promise<ReportResponse> {
   const res = await api.post('/reports', body, { headers: authHeader(token) });
