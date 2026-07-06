@@ -164,6 +164,11 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            redisTemplate.delete("refresh:" + email);
+            throw new IllegalStateException("사용할 수 없는 계정입니다.");
+        }
+
         String newAccessToken = jwtProvider.generateAccessToken(email, user.getRole().name());
         String newRefreshToken = jwtProvider.generateRefreshToken(email);
 
