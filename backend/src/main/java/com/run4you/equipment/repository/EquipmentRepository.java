@@ -75,6 +75,7 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
         SELECT e FROM Equipment e
         JOIN FETCH e.store s
         WHERE e.deletedAt IS NULL
+        AND s.brand.id = :brandId
         AND (:status IS NULL OR e.status = :status)
         AND (:keyword IS NULL OR
             e.name LIKE %:keyword%
@@ -83,6 +84,7 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
         ORDER BY e.id ASC
         """)
     List<Equipment> findAllActiveForAdmin(
+            @Param("brandId") Long brandId,
             @Param("status") EquipmentStatus status,
             @Param("keyword") String keyword);
 }

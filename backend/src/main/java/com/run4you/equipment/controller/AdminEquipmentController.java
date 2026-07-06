@@ -20,7 +20,7 @@ public class AdminEquipmentController {
 
     // 관리자용 - 전체 매장 기자재 목록 조회 (상태 필터 + 키워드 검색)
     @GetMapping
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('BRAND_ADMIN')")
     public ResponseEntity<ApiResponse<List<AdminEquipmentResponseDto>>> getAdminEquipmentList(
             @RequestParam(required = false) EquipmentStatus status,
             @RequestParam(required = false) String keyword) {

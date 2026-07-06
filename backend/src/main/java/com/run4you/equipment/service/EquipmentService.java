@@ -236,7 +236,10 @@ public class EquipmentService {
     @Transactional(readOnly = true)
     public List<AdminEquipmentResponseDto> getAdminEquipmentList(EquipmentStatus status, String keyword) {
 
-        List<Equipment> equipments = equipmentRepository.findAllActiveForAdmin(status, keyword);
+        User user = getCurrentUser();
+        Long brandId = user.getBrandId();
+
+        List<Equipment> equipments = equipmentRepository.findAllActiveForAdmin(brandId, status, keyword);
 
         return equipments.stream()
                 .map(e -> AdminEquipmentResponseDto.builder()
