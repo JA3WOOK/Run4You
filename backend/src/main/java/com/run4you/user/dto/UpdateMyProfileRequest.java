@@ -1,6 +1,6 @@
 package com.run4you.user.dto;
 
-import jakarta.validation.constraints.Size;
+import com.run4you.common.validation.ValidPassword;
 import lombok.Getter;
 
 @Getter
@@ -9,6 +9,6 @@ public class UpdateMyProfileRequest {
     private String phone;
     private String currentPassword;
 
-    @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
+    @ValidPassword
     private String newPassword;
 }
