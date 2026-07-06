@@ -5,6 +5,7 @@ import com.run4you.user.dto.MyProfileResponse;
 import com.run4you.user.dto.UpdateMyProfileRequest;
 import com.run4you.user.dto.UserResponse;
 import com.run4you.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,7 +29,7 @@ public class UserController {
     @PatchMapping("/me")
     public ResponseEntity<ApiResponse<MyProfileResponse>> updateMe(
             @AuthenticationPrincipal String email,
-            @RequestBody UpdateMyProfileRequest request) {
+            @Valid @RequestBody UpdateMyProfileRequest request) {
         return ResponseEntity.ok(ApiResponse.success(userService.updateMe(email, request)));
     }
 
