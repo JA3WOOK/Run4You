@@ -69,4 +69,20 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
     // 매장병 전체 카운트
     @Query("SELECT COUNT(e) FROM Equipment e WHERE e.store.id = :storeId AND e.deletedAt IS NULL")
     int countByActiveByStoreId(@Param("storeId") Long storeId);
+
+    // 관리자용 - 전체 매장 기자재 조회 (상태 필터 + 키워드 검색)
+    @Query("""
+        SELECT e FROM Equipment e
+        JOIN FETCH e.store s
+        WHERE e.deletedAt IS NULL
+        AND (:status IS NULL OR e.status = :status)
+        AND (:keyword IS NULL OR
+            e.name LIKE %:keyword%
+            OR e.modelName LIKE %:keyword%
+            OR s.name LIKE %:keyword%)
+        ORDER BY e.id ASC
+        """)
+    List<Equipment> findAllActiveForAdmin(
+            @Param("status") EquipmentStatus status,
+            @Param("keyword") String keyword);
 }

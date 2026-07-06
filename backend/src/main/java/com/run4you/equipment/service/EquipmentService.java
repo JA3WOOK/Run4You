@@ -231,4 +231,24 @@ public class EquipmentService {
                 .totalRepairCost(totalRepairCost)
                 .build();
     }
+
+    // 4. 관리자용 - 전체 매장 기자재 목록 조회 (상태 필터 + 키워드 검색)
+    @Transactional(readOnly = true)
+    public List<AdminEquipmentResponseDto> getAdminEquipmentList(EquipmentStatus status, String keyword) {
+
+        List<Equipment> equipments = equipmentRepository.findAllActiveForAdmin(status, keyword);
+
+        return equipments.stream()
+                .map(e -> AdminEquipmentResponseDto.builder()
+                        .id(e.getId())
+                        .storeName(e.getStore().getName())
+                        .name(e.getName())
+                        .modelName(e.getModelName())
+                        .category(e.getCategory())
+                        .status(e.getStatus())
+                        .purchasedAt(e.getPurchasedAt())
+                        .nextInspectionDate(e.getNextInspectionDate())
+                        .build())
+                .toList();
+    }
 }
