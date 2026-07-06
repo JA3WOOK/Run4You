@@ -404,21 +404,23 @@ export function StoreHome({ onRequestAS, onGoReceipts, onTrack, onViewAll, refre
                                 }}
                             >
                                 <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 min-w-0">
                                         <div
-                                            className="w-11 h-11 rounded-lg flex items-center justify-center"
+                                            className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0"
                                             style={{ background: "#F1F5F9" }}
                                         >
                                             <span style={{ color: "#475569" }}>{catIcons[eq.category]}</span>
                                         </div>
-                                        <div>
-                                            <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }}>
+                                        <div className="min-w-0">
+                                            <div style={{ fontSize: 16, fontWeight: 700, color: "#0F172A" }} className="truncate">
                                                 {eq.name}
                                             </div>
                                             <div style={{ fontSize: 13, color: "#64748B" }}>{eq.modelName}</div>
                                         </div>
                                     </div>
-                                    <StatusBadge status={eq.status} size="sm" />
+                                    <div className="shrink-0">
+                                        <StatusBadge status={eq.status} size="sm" />
+                                    </div>
                                 </div>
 
                                 {eq.errorCode && eq.status !== "OPERATIONAL" && (

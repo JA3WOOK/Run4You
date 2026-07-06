@@ -32,6 +32,7 @@ import EngineerCourseDetailPage from "./pages/engineer/EngineerCourseDetailPage"
 import EngineerExamPage from "./pages/engineer/EngineerExamPage";
 import EngineerManualPage from "./pages/engineer/EngineerManualPage";
 import { fetchMyActiveAssignment } from "./api/matching";
+import { AdminEquipment } from "./components/admin/AdminEquipment";
 
 
 const screenLabels: Record<string, string> = {
@@ -308,6 +309,7 @@ function Dashboard() {
                     )}
                     {screen === "admin-billing" && <AdminBilling />}
                     {screen === "admin-users" && <BrandAdminUsersPage />}
+                    {screen === "admin-equipment" && <AdminEquipment />}
 
                     {/* ── 공통 ── */}
                     {screen === "settings" && <SettingsPage />}

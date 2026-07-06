@@ -57,8 +57,8 @@ export function RepairHistoryModal({ equipmentId, category, onClose }: Props) {
             onClick={onClose}
         >
             <div
-                className="rounded-2xl w-full max-w-2xl flex flex-col"
-                style={{ background: "#fff", boxShadow: "0 20px 50px rgba(0,0,0,0.25)", maxHeight: "85vh" }}
+                className="rounded-2xl w-full flex flex-col overflow-hidden"
+                style={{ background: "#fff", boxShadow: "0 20px 50px rgba(0,0,0,0.25)", maxHeight: "85vh", maxWidth: 800 }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* 헤더 */}

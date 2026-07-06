@@ -103,3 +103,30 @@ export async function getRepairHistory(
     const res = await api.get(`/equipment/${equipmentId}/history`, { headers: authHeader(token) });
     return res.data.data;
 }
+
+// 관리자용 기자재 목록 아이템 (AdminEquipmentResponseDto)
+export interface AdminEquipment {
+    id: number;
+    storeName: string;
+    name: string;
+    modelName: string;
+    category: EquipmentCategory;
+    status: 'OPERATIONAL' | 'FAULTY' | 'REPAIRING';
+    purchasedAt: string | null;
+    nextInspectionDate: string | null;
+}
+
+// 관리자용 검색 필터
+export interface AdminEquipmentSearchParams {
+    status?: 'OPERATIONAL' | 'FAULTY' | 'REPAIRING';
+    keyword?: string;
+}
+
+// 4. 관리자용 - 전체 매장 기자재 목록 조회 (GET /api/admin/equipment)
+export async function getAdminEquipmentList(
+    token: string,
+    params?: AdminEquipmentSearchParams
+): Promise<AdminEquipment[]> {
+    const res = await api.get('/admin/equipment', { headers: authHeader(token), params });
+    return res.data.data;
+}
