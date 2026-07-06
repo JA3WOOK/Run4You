@@ -1,5 +1,5 @@
 // src/components/engineer/education/LessonPlayer.tsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { LessonItem } from "../../../api/education";
 
 interface Props {
@@ -49,6 +49,23 @@ export default function LessonPlayer({ lesson, onProgress }: Props) {
         {lesson.title} · {lesson.progressRate.toFixed(0)}% 시청함
         {lesson.completed && <span style={{ color: "#22C55E", fontWeight: 600 }}> · 완료</span>}
       </p>
+      {lesson.content && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: "14px 16px",
+            borderRadius: 8,
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            fontSize: 13,
+            color: "#0f172a",
+            lineHeight: 1.7,
+            whiteSpace: "pre-line",
+          }}
+        >
+          {lesson.content}
+        </div>
+      )}
     </div>
   );
 }
@@ -157,9 +174,11 @@ function YouTubePlayer({
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const lastReportedRef = useRef<number>(startSeconds);
   const pollRef = useRef<number | null>(null);
+  const [embedBlocked, setEmbedBlocked] = useState(false);
 
   useEffect(() => {
     let destroyed = false;
+    setEmbedBlocked(false);
 
     loadYouTubeApi().then(() => {
       if (destroyed || !window.YT) return;
@@ -177,6 +196,13 @@ function YouTubePlayer({
                 onProgress(lessonId, Math.floor(current));
               }
             }, 1000);
+          },
+          onError: (e: { data: number }) => {
+            // 101, 150 = 영상 소유자가 임베드(다른 사이트 재생)를 막아둔 경우
+            if (e.data === 101 || e.data === 150) {
+              setEmbedBlocked(true);
+              if (pollRef.current) window.clearInterval(pollRef.current);
+            }
           },
           onStateChange: (e: { data: number }) => {
             const ended = window.YT?.PlayerState.ENDED === e.data;
@@ -197,9 +223,13 @@ function YouTubePlayer({
       destroyed = true;
       if (pollRef.current) window.clearInterval(pollRef.current);
       if (playerRef.current) {
-        const current = playerRef.current.getCurrentTime();
-        if (Math.floor(current) > lastReportedRef.current) {
-          onProgress(lessonId, Math.floor(current));
+        try {
+          const current = playerRef.current.getCurrentTime();
+          if (Math.floor(current) > lastReportedRef.current) {
+            onProgress(lessonId, Math.floor(current));
+          }
+        } catch {
+          // 임베드가 막힌 상태에서는 getCurrentTime이 실패할 수 있음 — 무시
         }
         playerRef.current.destroy();
         playerRef.current = null;
@@ -207,6 +237,52 @@ function YouTubePlayer({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId]);
+
+  if (embedBlocked) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          aspectRatio: "16 / 9",
+          borderRadius: 8,
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 10,
+          padding: 24,
+          textAlign: "center",
+        }}
+      >
+        <p style={{ fontSize: 14, color: "#0F172A", fontWeight: 600, margin: 0 }}>
+          이 영상은 다른 사이트에서 재생할 수 없도록 설정되어 있어요
+        </p>
+        <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>
+          영상 소유자가 임베드(퍼가기)를 막아둔 영상이라 여기서는 재생할 수 없습니다.
+          아래 링크로 유튜브에서 직접 시청해주세요.
+        </p>
+        <a
+          href={`https://www.youtube.com/watch?v=${videoId}`}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            marginTop: 4,
+            padding: "8px 16px",
+            borderRadius: 8,
+            background: "var(--primary)",
+            color: "#fff",
+            fontSize: 13,
+            fontWeight: 600,
+            textDecoration: "none",
+          }}
+        >
+          유튜브에서 보기
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: "relative", width: "100%", paddingTop: "56.25%", borderRadius: 8, overflow: "hidden", background: "#000" }}>
