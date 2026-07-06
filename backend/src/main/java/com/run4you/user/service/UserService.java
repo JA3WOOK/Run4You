@@ -140,7 +140,7 @@ public class UserService {
 
     private void validateAuthority(User requester, User target) {
         if (requester.getRole() == Role.BRAND_ADMIN) {
-            if (!requester.getBrandId().equals(target.getBrandId())) {
+            if (requester.getBrandId() == null || !requester.getBrandId().equals(target.getBrandId())) {
                 throw new IllegalStateException("자기 브랜드 소속 사용자만 승인할 수 있습니다.");
             }
         }

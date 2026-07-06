@@ -8,6 +8,7 @@ import com.run4you.auth.security.JwtProvider;
 import com.run4you.brand.entity.Brand;
 import com.run4you.brand.entity.BrandStatus;
 import com.run4you.brand.repository.BrandRepository;
+import com.run4you.equipment.entity.EquipmentCategory;
 import com.run4you.matching.entity.EngineerProfile;
 import com.run4you.matching.entity.EngineerSpecialty;
 import com.run4you.matching.repository.EngineerProfileRepository;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -34,6 +36,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final StringRedisTemplate redisTemplate;
+
+    private static final int MAX_LOGIN_ATTEMPTS = 5;
+    private static final Duration LOGIN_LOCK_WINDOW = Duration.ofMinutes(10);
 
     @Transactional
     public void signup(SignupRequest request) {
@@ -79,6 +84,11 @@ public class AuthService {
             List<String> specialties = request.getSpecialties();
             if (specialties != null && !specialties.isEmpty()) {
                 for (String category : specialties) {
+                    if (!isValidSpecialty(category)) {
+                        throw new IllegalArgumentException("올바르지 않은 전문분야입니다: " + category);
+                    }
+                }
+                for (String category : specialties) {
                     savedProfile.getSpecialties().add(EngineerSpecialty.of(savedProfile, category));
                 }
                 engineerProfileRepository.save(savedProfile);
@@ -119,12 +129,24 @@ public class AuthService {
     }
 
     public TokenResponse login(LoginRequest request) {
+        String failKey = "login:fail:" + request.getEmail();
+        String failCount = redisTemplate.opsForValue().get(failKey);
+        if (failCount != null && Integer.parseInt(failCount) >= MAX_LOGIN_ATTEMPTS) {
+            throw new IllegalStateException("로그인 실패 횟수를 초과했습니다. 잠시 후 다시 시도해주세요.");
+        }
+
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            Long attempts = redisTemplate.opsForValue().increment(failKey);
+            if (attempts != null && attempts == 1) {
+                redisTemplate.expire(failKey, LOGIN_LOCK_WINDOW);
+            }
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
+
+        redisTemplate.delete(failKey);
 
         if (user.getStatus() == UserStatus.PENDING) {
             throw new IllegalStateException("승인 대기 중인 계정입니다.");
@@ -145,8 +167,19 @@ public class AuthService {
         return new TokenResponse(accessToken, refreshToken, user.getName());
     }
 
-    public void logout(String email) {
+    public void logout(String email, String accessToken) {
         redisTemplate.delete("refresh:" + email);
+
+        if (accessToken != null && jwtProvider.validateToken(accessToken)) {
+            long remaining = jwtProvider.getExpiration(accessToken).getTime() - new Date().getTime();
+            if (remaining > 0) {
+                redisTemplate.opsForValue().set(
+                        "blacklist:" + jwtProvider.getJti(accessToken),
+                        "1",
+                        Duration.ofMillis(remaining)
+                );
+            }
+        }
     }
 
     public TokenResponse reissue(String refreshToken) {
@@ -179,5 +212,14 @@ public class AuthService {
         );
 
         return new TokenResponse(newAccessToken, newRefreshToken, user.getName());
+    }
+
+    private boolean isValidSpecialty(String category) {
+        try {
+            EquipmentCategory.valueOf(category);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

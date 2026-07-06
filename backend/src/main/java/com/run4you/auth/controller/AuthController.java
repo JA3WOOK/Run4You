@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,8 +40,13 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal String email) {
-        authService.logout(email);
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @AuthenticationPrincipal String email,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        String accessToken = (StringUtils.hasText(authorization) && authorization.startsWith("Bearer "))
+                ? authorization.substring(7)
+                : null;
+        authService.logout(email, accessToken);
         return ResponseEntity.ok(ApiResponse.success(null, "로그아웃되었습니다."));
     }
 
