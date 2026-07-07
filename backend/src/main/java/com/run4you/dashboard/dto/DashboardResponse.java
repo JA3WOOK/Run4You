@@ -48,13 +48,14 @@ public record DashboardResponse(
     }
 
     /** 기자재별 MTBF (평균 고장 간격, 일). 고장 1회뿐이면 mtbfDays = null */
-    public record EquipmentMtbf(Long equipmentId, int failureCount, Double mtbfDays) {
+    public record EquipmentMtbf(Long equipmentId, String equipmentName, int failureCount, Double mtbfDays) {
     }
 
     /** 엔지니어별 수리 건수 */
-    public record EngineerStat(Long engineerId, long repairCount) {
+    public record EngineerStat(Long engineerId, String engineerName, long repairCount) {
     }
 
-    public record EquipmentFailure(Long equipmentId, int failureCount) {
+    /** 자주 고장나는 기자재 TOP N */
+    public record EquipmentFailure(Long equipmentId, String equipmentName, int failureCount) {
     }
 }

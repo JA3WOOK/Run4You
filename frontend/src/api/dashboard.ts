@@ -29,13 +29,13 @@ export interface CategoryDefect {
   category: string; replacedQuantity: number; occurrences: number;
 }
 export interface EquipmentMtbf {
-  equipmentId: number; failureCount: number; mtbfDays: number | null;
+  equipmentId: number; equipmentName: string; failureCount: number; mtbfDays: number | null;
 }
 export interface EngineerStat {
-  engineerId: number; repairCount: number;
+  engineerId: number; engineerName: string; repairCount: number;
 }
 export interface EquipmentFailure {
-  equipmentId: number; failureCount: number;
+  equipmentId: number; equipmentName: string; failureCount: number;
 }
 export interface DashboardResponse {
   settlement: SettlementSummary;
